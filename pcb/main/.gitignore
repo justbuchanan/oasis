@@ -1,0 +1,9 @@
+*.lck
+pcb-backups/
+*.kicad_prl
+fp-info-cache
+\#auto_saved_files\#
+_autosave*
+*.bak
+production/
+component_layout_plugin.log

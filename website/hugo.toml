@@ -1,0 +1,31 @@
+baseURL = 'https://oasis-terrarium.com/'
+languageCode = 'en-us'
+title = 'Oasis Terrarium'
+
+[module]
+[[module.imports]]
+path = 'github.com/alex-shpak/hugo-book'
+
+
+
+
+# hugo-book theme config
+
+# show modification info on pages
+enableGitInfo = true
+
+[params]
+  BookRepo = 'https://github.com/justbuchanan/oasis'
+  BookCommitPath = 'commit'
+  BookComments = false
+
+[services]
+  [services.googleAnalytics]
+    id = 'G-LQVXK4KC1Z'
+
+[minify]
+  disableJS = false
+
+
+[markup.goldmark.renderer]
+  unsafe = true # Allow HTML in md files

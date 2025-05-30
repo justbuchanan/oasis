@@ -1,0 +1,11 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "LDD-700LS")(type "KiCad")(uri "${KIPRJMOD}/lib/LDD-700LS.kicad_sym")(options "")(descr ""))
+  (lib (name "ESP32-C3-WROOM-02-N4")(type "KiCad")(uri "${KIPRJMOD}/lib/ESP32-C3-WROOM-02-N4.kicad_sym")(options "")(descr ""))
+  (lib (name "TPS560430X3FDBVR")(type "KiCad")(uri "${KIPRJMOD}/lib/TPS560430X3FDBVR.kicad_sym")(options "")(descr ""))
+  (lib (name "power_v18")(type "KiCad")(uri "${KIPRJMOD}/lib/power_v18.kicad_sym")(options "")(descr ""))
+  (lib (name "CD40109BNSR")(type "KiCad")(uri "${KIPRJMOD}/lib/CD40109BNSR.kicad_sym")(options "")(descr ""))
+  (lib (name "LMR54406DBVR")(type "KiCad")(uri "${KIPRJMOD}/lib/LMR54406DBVR.kicad_sym")(options "")(descr ""))
+  (lib (name "LMR54410FDBVR")(type "KiCad")(uri "${KIPRJMOD}/lib/LMR54410FDBVR.kicad_sym")(options "")(descr ""))
+  (lib (name "IX4427N")(type "KiCad")(uri "${KIPRJMOD}/lib/IX4427N.kicad_sym")(options "")(descr ""))
+)

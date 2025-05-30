@@ -1,0 +1,8 @@
+# ESP-IDF Partition Table
+# Oasis requires a custom partition table so that we can have an extra data partition to save the configuration to.
+# note: the one labeled spiffs is actually formatted by the app as littlefs
+# Name,   Type, SubType, Offset,  Size, Flags
+nvs,       data, nvs,       0x9000,  0x6000,
+phy_init,  data, phy,       0xf000,  0x1000,
+oasisdata, data, nvs,    0x10000, 0x10000,
+factory,   app,  factory,   0x20000, 3M,

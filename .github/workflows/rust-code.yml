@@ -1,0 +1,51 @@
+name: Build Code
+
+on: push
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: install apt packages
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: make cmake cargo pkg-config
+        version: 1.6
+
+    - name: select rust toolchain
+      run: |
+        rustup install nightly
+        rustup update nightly
+        rustup default nightly
+        rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+
+    - uses: Swatinem/rust-cache@v2.7.8
+      with:
+        workspaces: |
+          code/client
+          code/demoserver
+          code/esp32
+          code/terralib
+        # try this option bc caching isn't working. TODO: remove?
+        cache-all-crates: "true"
+
+    - name: install ldproxy
+      run: cargo install ldproxy
+
+    # TODO: run tests for esp32 code
+    - name: compile rust code
+      run: make code
+    - name: test rust code
+      run: make test-code
+
+    - name: save artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        path: build/code

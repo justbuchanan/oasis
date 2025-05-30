@@ -1,0 +1,8 @@
+*.lck
+pcb-backups/
+*.kicad_prl
+fp-info-cache
+\#auto_saved_files\#
+_autosave*
+*.bak
+

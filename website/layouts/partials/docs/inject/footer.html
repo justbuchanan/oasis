@@ -1,0 +1,6 @@
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.6/medium-zoom.min.js"></script>
+
+{{ $zoom := resources.Get "js/zoom.js" | minify | fingerprint }}
+<script type="text/javascript" src={{ $zoom.RelPermalink }}></script>
+
+© Copyright 2025 Justin Buchanan

@@ -1,0 +1,75 @@
+[package]
+name = "oasis"
+version = "0.2.0"
+authors = ["Justin Buchanan <justbuchanan@gmail.com>"]
+edition = "2021"
+resolver = "2"
+
+[[bin]]
+name = "blinky"
+path = "src/blinky/main.rs"
+
+[[bin]]
+name = "mistdriver"
+path = "src/mistdriver/main.rs"
+
+[[bin]]
+name = "oasis"
+path = "src/oasis/main.rs"
+
+[[bin]]
+name = "sht30test"
+path = "src/sht30test/main.rs"
+
+[[bin]]
+name = "hardware_test"
+path = "src/hardware_test/main.rs"
+
+[lib]
+name = "terrarium"
+path = "src/terrarium/lib.rs"
+
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = 'abort'
+strip = true
+
+[profile.dev]
+debug = true    # Symbols are nice and they don't increase the size on Flash
+opt-level = "z"
+
+[features]
+default = ["std", "esp-idf-svc/native"]
+std = ["alloc", "esp-idf-svc/binstart", "esp-idf-svc/std"]
+alloc = ["esp-idf-svc/alloc"]
+
+[dependencies]
+log = { version = "0.4", default-features = false }
+# using newer version of esp-idf-hal that includes fade support for leds
+esp-idf-svc = { git = "https://github.com/justbuchanan/esp-idf-svc", rev = "d0843620cdf8d95a8b1428d2308d3ec57962e37e", default-features = false, features = ["experimental"] }
+esp-idf-hal = { git = "https://github.com/esp-rs/esp-idf-hal", rev = "ad305a909c559c9770c2bcfd9d4aa10dc55f4cee" }
+anyhow = "1.0.96"
+embedded-svc = "0.28.1"
+serde = "1.0.197"
+serde_json = "1.0.114"
+sht3x = { git = "https://github.com/miek/sht3x-rs", version = "0.1.1" }
+terralib = { path = "../terralib"}
+embassy-executor = { version = "0.7.0", features = ["arch-std", "executor-thread"] }
+embassy-time = { version = "0.4.0", features = ["std"] }
+embassy-futures = "0.1.1"
+embassy-sync = { version = "0.6.2", features = ["std"] }
+rand = "0.9.1"
+heapless = "0.8.0"
+
+[build-dependencies]
+embuild = "0.33.0"
+
+# enable mdns - see https://github.com/esp-rs/esp-idf-svc/issues/343
+[[package.metadata.esp-idf-sys.extra_components]]
+remote_component = { name = "espressif/mdns", version = "1.2" }
+
+[[package.metadata.esp-idf-sys.extra_components]]
+remote_component = { name = "joltwallet/littlefs", version = "1.19.1" }

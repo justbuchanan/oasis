@@ -1,0 +1,1245 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Oasis Terrarium</title>
+        <!-- prevent favicon requests -->
+        <link rel="icon" href="data:image/png;base64,iVBORw0KGgo=" />
+        <style>
+            :root {
+                --main-green: #4caf50;
+                --light-green: #8bc34a;
+                --dark-green: #2e7d32;
+                --bg-color: #f5f5f5;
+                --card-bg: white;
+                --text-color: #333;
+                --error-color: #f44336;
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    Arial, sans-serif;
+                line-height: 1.6;
+                color: var(--text-color);
+                background-color: var(--bg-color);
+                padding: 20px;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+
+            h1 {
+                color: var(--dark-green);
+                border-bottom: 2px solid var(--main-green);
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+
+            .card {
+                background: var(--card-bg);
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .control-item {
+                margin-bottom: 15px;
+                display: flex;
+                align-items: center;
+            }
+
+            .value-display {
+                margin-left: 10px;
+                min-width: 5ch;
+                text-align: right;
+            }
+
+            label {
+                flex: 1;
+                font-weight: 500;
+            }
+
+            .slider {
+                -webkit-appearance: none;
+                width: 60%;
+                height: 6px;
+                border-radius: 5px;
+                background: #d3d3d3;
+                outline: none;
+            }
+
+            .slider::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: var(--main-green);
+                cursor: pointer;
+            }
+
+            .slider::-moz-range-thumb {
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: var(--main-green);
+                cursor: pointer;
+            }
+
+            input[type="checkbox"] {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 40px;
+                height: 20px;
+                background: #d3d3d3;
+                border-radius: 20px;
+                position: relative;
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+
+            input[type="checkbox"]:checked {
+                background: var(--main-green);
+            }
+
+            input[type="checkbox"]:before {
+                content: "";
+                position: absolute;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                top: 1px;
+                left: 1px;
+                background: white;
+                transition: left 0.3s;
+            }
+
+            input[type="checkbox"]:checked:before {
+                left: 21px;
+            }
+
+            input:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            .sensors-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                grid-gap: 10px;
+            }
+
+            .sensor-item {
+                background-color: rgba(76, 175, 80, 0.1);
+                border-radius: 6px;
+                padding: 10px;
+                text-align: center;
+            }
+
+            .sensor-value {
+                font-size: 1.2em;
+                font-weight: bold;
+                color: var(--dark-green);
+            }
+
+            .sensor-label {
+                font-size: 0.9em;
+                opacity: 0.8;
+            }
+
+            .status {
+                font-size: 0.8em;
+                text-align: right;
+                color: #666;
+                margin-top: 5px;
+            }
+
+            .error-message {
+                background-color: rgba(244, 67, 54, 0.1);
+                border-left: 3px solid var(--error-color);
+                padding: 10px 15px;
+                margin-top: 10px;
+                color: var(--error-color);
+                font-size: 0.9em;
+                display: none;
+            }
+
+            .error-message.visible {
+                display: block;
+            }
+
+            .reconnecting {
+                color: var(--dark-green);
+                font-style: italic;
+            }
+
+            /* Wi-Fi Settings Form Styling */
+            #wifi-form div {
+                display: flex;
+                align-items: center;
+                margin-bottom: 15px; /* Vertical margin for rows */
+            }
+
+            #wifi-form label {
+                flex-basis: 150px; /* Fixed width for labels */
+                margin-right: 10px; /* Space between label and input */
+            }
+
+            #wifi-form input[type="text"],
+            #wifi-form input[type="password"] {
+                flex-grow: 1;
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 1em;
+            }
+
+            /* Wrapper for password input and toggle button */
+            .password-wrapper {
+                display: flex;
+                align-items: center;
+                flex-grow: 1;
+            }
+
+            /* Positioning for button next to password entry */
+            #password {
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+                /* This is a terrible hack to make the password field align with the ssid field. do better. */
+                width: 172px;
+            }
+
+            #toggle-password {
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-left: none;
+                background-color: #eee;
+                border-top-right-radius: 4px;
+                border-bottom-right-radius: 4px;
+                font-size: 0.9em;
+                height: 38px;
+            }
+
+            #toggle-password:hover {
+                background-color: #ddd;
+            }
+
+            button {
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+            #wifi-form button[type="submit"] {
+                background-color: var(--main-green);
+                color: white;
+                padding: 10px 20px;
+                font-size: 1em;
+                margin-top: 10px; /* Margin above the button */
+                display: block; /* Make button block to center it */
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            #wifi-form button[type="submit"]:hover {
+                background-color: var(--dark-green);
+            }
+
+            #wifi-form hr {
+                margin-top: 20px; /* Space above hr */
+                margin-bottom: 20px; /* Space below hr */
+            }
+
+            .card-footnote {
+                font-size: 0.9em;
+                color: #666;
+            }
+
+            x-schedule-entry {
+                /*                display: block;*/
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 5px;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 10px;
+            }
+
+            .schedule-entry-container {
+                flex-grow: 1;
+                margin-right: 10px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .schedule-entry-container input {
+                margin-right: 8px;
+                margin-left: 8px;
+            }
+            .schedule-entry-container input[type="checkbox"] {
+                margin-left: 0px;
+            }
+
+            .schedule-entry-row {
+                display: flex;
+                align-items: center;
+                margin-top: 4px;
+                margin-bottom: 4px;
+            }
+
+            .add-button {
+                background-color: var(--main-green);
+                color: white;
+                padding: 8px 16px;
+                font-size: 0.9em;
+            }
+
+            .add-button:hover {
+                background-color: var(--dark-green);
+            }
+
+            .delete-button {
+                background-color: var(--error-color);
+                color: white;
+                padding: 6px 12px;
+                font-size: 0.9em;
+            }
+
+            .delete-button:hover {
+                background-color: #d32f2f; /* darker red */
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Oasis Terrarium</h1>
+
+        <h2>Temporary Controls</h2>
+        <div class="card">
+            <div class="control-item">
+                <label for="lights">Lights</label>
+                <input
+                    type="range"
+                    min="0"
+                    max="20"
+                    value="0"
+                    class="slider"
+                    id="lights"
+                    disabled
+                />
+                <div class="value-display" id="light-control-value-display">
+                    0%
+                </div>
+            </div>
+
+            <div class="control-item">
+                <label for="mister">Mister</label>
+                <input type="checkbox" id="mister" name="mister" disabled />
+            </div>
+
+            <div class="control-item">
+                <label for="fans">Fan</label>
+                <input type="checkbox" id="fans" name="fans" disabled />
+            </div>
+            <p class="card-footnote">
+                Note: the above controls take effect for 30 seconds, then the
+                terrarium reverts to its schedule.
+            </p>
+        </div>
+
+        <h2>Status</h2>
+        <div class="card">
+            <div class="sensors-grid">
+                <div class="sensor-item">
+                    <div class="sensor-label">Temperature</div>
+                    <div class="sensor-value" id="temp">?</div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">Humidity</div>
+                    <div class="sensor-value" id="humid">?</div>
+                </div>
+            </div>
+            <div class="status">
+                Last updated: <span id="last-updated">?</span>
+            </div>
+            <div id="error-message" class="error-message"></div>
+        </div>
+
+        <h2>Schedule</h2>
+        <div class="card">
+            <h3>Lights</h3>
+            <hr />
+            <div class="control-item">
+                <label for="light-schedule-intensity">Light Intensity</label>
+                <input
+                    type="range"
+                    min="0"
+                    max="20"
+                    class="slider"
+                    id="light-schedule-intensity"
+                />
+                <div class="value-display" id="light-schedule-value-display">
+                    50%
+                </div>
+            </div>
+            <div class="control-item">
+                <label for="light-schedule-on-time">On Time</label>
+                <input type="time" id="light-schedule-on-time" />
+            </div>
+            <div class="control-item">
+                <label for="light-schedule-off-time">Off Time</label>
+                <input type="time" id="light-schedule-off-time" />
+            </div>
+
+            <h3>Mist</h3>
+            <hr />
+            <input
+                type="radio"
+                id="mist-auto-schedule"
+                name="mist_schedule_selection"
+                value="auto"
+            />
+            <label for="mist-auto-schedule">Auto</label>
+            <div class="mist-auto-config-box">
+                <label for="mist-minimum-humidity" disabled
+                    >Minimum Humidity:</label
+                >
+                <input
+                    type="number"
+                    id="mist-minimum-humidity"
+                    min="10"
+                    max="95"
+                    disabled
+                />
+                %
+            </div>
+
+            <input
+                type="radio"
+                id="mist-manual-schedule"
+                name="mist_schedule_selection"
+                value="manual"
+            />
+            <label for="mist-manual-schedule">Manual</label>
+            <x-schedule-list id="mist-schedule-list"></x-schedule-list>
+
+            <h3>Fans</h3>
+            <hr />
+            <x-schedule-list id="fan-schedule-list"></x-schedule-list>
+        </div>
+
+        <h2>Settings</h2>
+        <div class="card">
+            <form id="wifi-form">
+                <div>
+                    <label for="hostname">Hostname:</label>
+                    <input
+                        type="text"
+                        autocapitalize="off"
+                        autocomplete="off"
+                        id="hostname"
+                        placeholder="oasis"
+                    />
+                </div>
+                <p class="card-footnote">
+                    The terrarium will be accessible on the network at
+                    "http://&lt;hostname&gt;.local"
+                </p>
+                <hr />
+                <div>
+                    <label for="ssid">Network Name:</label>
+                    <input
+                        type="text"
+                        autocapitalize="off"
+                        autocomplete="off"
+                        id="ssid"
+                    />
+                </div>
+                <div>
+                    <label for="password">Password:</label>
+                    <div class="password-wrapper">
+                        <input
+                            type="password"
+                            autocapitalize="off"
+                            autocomplete="off"
+                            id="password"
+                        />
+                        <button type="button" id="toggle-password">Show</button>
+                    </div>
+                </div>
+                <button type="submit">Connect</button>
+            </form>
+        </div>
+
+        <script type="text/javascript">
+            const BASE_ADDR = "http://" + window.location.host;
+
+            // slider ranges from 0-20 so there are "steps" every 5%.
+            const LIGHT_SLIDER_MAX_VALUE = 20;
+
+            // Rate limiting variables
+            const MAX_RETRIES = 3;
+            const RETRY_DELAY = 3000; // 3 seconds
+            const THROTTLE_DELAY = 200; // 200ms = 5 updates per second
+            const POLLING_INTERVAL = 5000; // 5 seconds
+            const DEBOUNCE_POLL_DELAY = 2000; // Grace period after user interaction
+
+            // DOM Elements
+            //------------------------------------------------------------------
+            const fanCheckbox = document.getElementById("fans");
+            const misterCheckbox = document.getElementById("mister");
+            const lightSlider = document.getElementById("lights");
+            const lightsValueDisplay = document.getElementById(
+                "light-control-value-display",
+            );
+
+            const mistScheduleList =
+                document.getElementById("mist-schedule-list");
+            const fanScheduleList =
+                document.getElementById("fan-schedule-list");
+
+            const tempDisplay = document.getElementById("temp");
+            const humidDisplay = document.getElementById("humid");
+            const lastUpdated = document.getElementById("last-updated");
+            const errorMessage = document.getElementById("error-message");
+
+            const lightScheduleIntensitySlider = document.getElementById(
+                "light-schedule-intensity",
+            );
+            const lightScheduleValueDisplay = document.getElementById(
+                "light-schedule-value-display",
+            );
+            const lightScheduleOnTimeInput = document.getElementById(
+                "light-schedule-on-time",
+            );
+            const lightScheduleOffTimeInput = document.getElementById(
+                "light-schedule-off-time",
+            );
+
+            const mistMinimumHumidityBox = document.getElementById(
+                "mist-minimum-humidity",
+            );
+            const mistAutoScheduleRadioButton =
+                document.getElementById("mist-auto-schedule");
+            const mistManualScheduleRadioButton = document.getElementById(
+                "mist-manual-schedule",
+            );
+
+            const wifiForm = document.getElementById("wifi-form");
+            const ssidInput = document.getElementById("ssid");
+            const passwordInput = document.getElementById("password");
+            const hostnameInput = document.getElementById("hostname");
+            const togglePasswordButton =
+                document.getElementById("toggle-password");
+
+            // Web Components
+            //------------------------------------------------------------------
+
+            class ScheduleEntry extends HTMLElement {
+                constructor(
+                    data = {
+                        start_time: "10:00",
+                        duration_secs: 30,
+                        repeat: {
+                            n_hours: 1,
+                            stop_time: "22:00",
+                        },
+                    },
+                ) {
+                    super();
+                    this._data = data;
+                }
+
+                connectedCallback() {
+                    this.innerHTML = `
+                <div class="schedule-entry-container">
+                    <div class="schedule-entry-row">
+                        At 
+                        <input type="time" class="schedule-start-input" value=${this._data.start_time}>
+                        , run for <input type="number" class="schedule-duration-input" value=${this._data.duration_secs} style="width: 50px;"></input> seconds.
+                    </div>
+                    <div class="schedule-entry-row">
+                        <input type="checkbox" ${this._data.repeat ? "checked" : ""}></input> Repeat every <input type="number" value=${this._data.repeat ? this._data.repeat.n_hours : 1} class="schedule-interval-input" style="width: 50px;" ${this._data.repeat ? "" : "disabled"}></input> hours until <input type="time" class="schedule-stop-input" value=${this._data.repeat ? this._data.repeat.stop_time : "22:00"} ${this._data.repeat ? "" : "disabled"}></input>
+                    </div>
+                </div>
+                <button class="delete-button">Delete</button>
+            `;
+                    this.deleteButton = this.querySelector(".delete-button");
+                    this.startTimeField = this.querySelector(
+                        ".schedule-start-input",
+                    );
+                    this.durationField = this.querySelector(
+                        ".schedule-duration-input",
+                    );
+                    this.repeatCheckbox = this.querySelector(
+                        "input[type='checkbox']",
+                    );
+                    this.intervalField = this.querySelector(
+                        ".schedule-interval-input",
+                    );
+                    this.stopTimeField = this.querySelector(
+                        ".schedule-stop-input",
+                    );
+
+                    this.deleteButton.addEventListener("click", () => {
+                        this.remove();
+                        this.emitChangeEvent();
+                    });
+
+                    this.repeatCheckbox.addEventListener("change", () => {
+                        const repeat = this.repeatCheckbox.checked;
+                        this.intervalField.disabled = !repeat;
+                        this.stopTimeField.disabled = !repeat;
+                        this.emitChangeEvent();
+                    });
+
+                    [
+                        this.startTimeField,
+                        this.durationField,
+                        this.intervalField,
+                        this.stopTimeField,
+                    ].forEach((field) => {
+                        field.addEventListener("change", () =>
+                            this.emitChangeEvent(),
+                        );
+                    });
+                }
+
+                emitChangeEvent() {
+                    let event = new CustomEvent("x-schedule-entry-changed", {
+                        bubbles: true,
+                        cancelable: true,
+                    });
+                    return this.dispatchEvent(event);
+                }
+
+                buildEntryData() {
+                    let entry = {
+                        start_time: this.startTimeField.value,
+                        duration_secs: parseInt(this.durationField.value),
+                    };
+                    if (this.repeatCheckbox.checked) {
+                        entry.repeat = {
+                            n_hours: parseInt(this.intervalField.value),
+                            stop_time: this.stopTimeField.value,
+                        };
+                    }
+                    return entry;
+                }
+            }
+            customElements.define("x-schedule-entry", ScheduleEntry);
+
+            class ScheduleList extends HTMLElement {
+                constructor() {
+                    super();
+                }
+
+                connectedCallback() {
+                    this.innerHTML = `
+                        <div class="schedule-list-container">
+                            <x-schedule-entry></x-schedule-entry>
+                        </div>
+                        <button class="add-button">Add</button>
+                    `;
+                    this.container = this.querySelector(
+                        ".schedule-list-container",
+                    );
+                    this.addButton = this.querySelector(".add-button");
+                    this.addButton.addEventListener("click", () => {
+                        this._addEntry();
+                    });
+                }
+
+                _addEntry(data) {
+                    let newEntry = new ScheduleEntry(data);
+                    newEntry.addEventListener(
+                        "x-schedule-entry-changed",
+                        () => {
+                            this.emitChangeEvent();
+                        },
+                    );
+                    this.container.appendChild(newEntry);
+                }
+
+                buildScheduleData() {
+                    let data = [];
+                    this.querySelectorAll("x-schedule-entry").forEach(
+                        (entry) => {
+                            data.push(entry.buildEntryData());
+                        },
+                    );
+                    return data;
+                }
+
+                setScheduleData(dataArray) {
+                    // clear out old entries
+                    this.querySelectorAll("x-schedule-entry").forEach(
+                        (entry) => {
+                            entry.remove();
+                        },
+                    );
+
+                    dataArray.forEach((entryData) => {
+                        this._addEntry(entryData);
+                    });
+                }
+
+                emitChangeEvent() {
+                    let event = new CustomEvent("x-schedule-list-changed", {
+                        bubbles: true,
+                        cancelable: true,
+                    });
+                    return this.dispatchEvent(event);
+                }
+            }
+            customElements.define("x-schedule-list", ScheduleList);
+
+            // State tracking
+            let connectionFailed = false;
+            let retryCount = 0;
+            let lastLightUpdateTime = 0;
+            let lightUpdateTimeout = null;
+            // Local state tracking to prevent update issues
+            let localState = {
+                fans: false,
+                mist: false,
+                lights: 0,
+            };
+            // Polling control
+            let pollingInterval = null;
+            let lastUserInteraction = 0;
+            let pollingSuspended = false;
+
+            // Oasis API Interaction
+            //------------------------------------------------------------------
+            async function updateConfig(cfg_update) {
+                console.log(
+                    "Posting update to /config: " + JSON.stringify(cfg_update),
+                );
+                try {
+                    const response = await fetch(`${BASE_ADDR}/config`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(cfg_update),
+                    });
+                    if (!response.ok) {
+                        const response_text = await response.text();
+                        const msg = `Config update failed with status: ${response.status}, msg: ${response_text}`;
+                        console.error(msg);
+                        // TODO: show error in error box on screen?
+                        throw new Error(msg);
+                    }
+                    console.log("/config update succeeded");
+                    return;
+                } catch (error) {
+                    console.error("updateConfig failed:", error);
+                    throw error;
+                }
+            }
+
+            // Send control commands for lights, fans, or mister
+            async function control(name, value) {
+                try {
+                    updateLocalState(name, value);
+                    suspendPolling();
+
+                    const response = await fetch(`${BASE_ADDR}/control`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            updates: [
+                                {
+                                    name: name,
+                                    value: value,
+                                    duration_secs: 30.0,
+                                },
+                            ],
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        const response_text = await response.text();
+                        const msg = `Control request failed with status: ${response.status}, msg: ${response_text}`;
+                        throw new Error(msg);
+                    }
+
+                    // Hide any previous error messages on successful control
+                    hideError();
+                } catch (error) {
+                    showError(`Failed to update ${name}: ${error.message}`);
+                }
+            }
+
+            // Event Handlers
+            //------------------------------------------------------------------
+
+            // toggle password visibility
+            togglePasswordButton.addEventListener("click", function () {
+                const type =
+                    passwordInput.getAttribute("type") === "password"
+                        ? "text"
+                        : "password";
+                passwordInput.setAttribute("type", type);
+                this.textContent = type === "password" ? "Show" : "Hide";
+            });
+
+            wifiForm.addEventListener("submit", async function (e) {
+                e.preventDefault();
+                const ssid = ssidInput.value;
+                const password = passwordInput.value;
+                const hostname = hostnameInput.value;
+
+                let cfg_update = {};
+                cfg_update.name = hostname == "" ? null : hostname;
+                cfg_update.wifi =
+                    ssid == "" ? null : { ssid: ssid, password: password };
+                // TODO: error handling
+                await updateConfig(cfg_update);
+
+                alert(
+                    "Wifi information updated. The terrarium will reboot and use the newly-configured network. Wait a few moments, connect to the network, then browse to http://" +
+                        hostname +
+                        ".local",
+                );
+            });
+
+            // Light temporary controls
+            lightSlider.addEventListener("change", function () {
+                // Force an immediate update when the user releases the slider
+                if (lightUpdateTimeout) {
+                    clearTimeout(lightUpdateTimeout);
+                }
+                lightChange();
+                lastLightUpdateTime = Date.now();
+            });
+            lightSlider.addEventListener("input", handleLightChange);
+            function lightChange() {
+                control("lights", lightSlider.value / LIGHT_SLIDER_MAX_VALUE);
+                lightsValueDisplay.textContent = lightSlider.value * 5 + "%";
+            }
+
+            fanCheckbox.addEventListener("change", () =>
+                control("fans", fanCheckbox.checked),
+            );
+            misterCheckbox.addEventListener("change", () =>
+                control("mist", misterCheckbox.checked),
+            );
+
+            // Light schedule
+            lightScheduleOffTimeInput.addEventListener(
+                "input",
+                handleLightScheduleChange,
+            );
+            lightScheduleOnTimeInput.addEventListener(
+                "input",
+                handleLightScheduleChange,
+            );
+            lightScheduleIntensitySlider.addEventListener(
+                "change",
+                handleLightScheduleChange,
+            );
+            lightScheduleIntensitySlider.addEventListener("input", function () {
+                lightScheduleValueDisplay.textContent =
+                    lightScheduleIntensitySlider.value * 5 + "%";
+            });
+
+            mistMinimumHumidityBox.addEventListener("change", async () => {
+                let cfg_update = {
+                    schedule: {
+                        humidity_setpoint:
+                            parseFloat(mistMinimumHumidityBox.value) / 100.0,
+                    },
+                };
+                await updateConfig(cfg_update);
+            });
+            async function mistScheduleTypeChanged() {
+                console.log("mist schedule type changed");
+                mistMinimumHumidityBox.disabled =
+                    !mistAutoScheduleRadioButton.checked;
+                cfg_update = {
+                    schedule: {
+                        mist_mode: mistAutoScheduleRadioButton.checked
+                            ? "Auto"
+                            : "Manual",
+                    },
+                };
+                await updateConfig(cfg_update);
+            }
+            mistAutoScheduleRadioButton.addEventListener(
+                "input",
+                mistScheduleTypeChanged,
+            );
+            mistManualScheduleRadioButton.addEventListener(
+                "input",
+                mistScheduleTypeChanged,
+            );
+
+            mistScheduleList.addEventListener(
+                "x-schedule-list-changed",
+                async () => {
+                    let data = mistScheduleList.buildScheduleData();
+                    let cfg_update = {
+                        schedule: {
+                            mist: data,
+                        },
+                    };
+                    await updateConfig(cfg_update);
+                },
+            );
+            fanScheduleList.addEventListener(
+                "x-schedule-list-changed",
+                async () => {
+                    let data = fanScheduleList.buildScheduleData();
+                    let cfg_update = {
+                        schedule: {
+                            fans: data,
+                        },
+                    };
+                    await updateConfig(cfg_update);
+                },
+            );
+
+            // Suspend polling for a short period after user interaction
+            function suspendPolling() {
+                lastUserInteraction = Date.now();
+                pollingSuspended = true;
+
+                // Resume polling after the debounce period
+                setTimeout(() => {
+                    pollingSuspended = false;
+                }, DEBOUNCE_POLL_DELAY);
+            }
+
+            function shouldSkipPolling() {
+                return pollingSuspended;
+            }
+
+            // Update local state to track current control values
+            function updateLocalState(name, value) {
+                switch (name) {
+                    case "fans":
+                        localState.fans = value;
+                        break;
+                    case "mist":
+                        localState.mist = value;
+                        break;
+                    case "lights":
+                        localState.lights = value;
+                        break;
+                }
+            }
+
+            // Handle light slider changes with rate limiting
+            function handleLightChange() {
+                const now = Date.now();
+                const elapsed = now - lastLightUpdateTime;
+
+                // Clear any pending timeout
+                if (lightUpdateTimeout) {
+                    clearTimeout(lightUpdateTimeout);
+                }
+
+                // If we haven't sent an update recently, send immediately
+                if (elapsed > THROTTLE_DELAY) {
+                    lightChange();
+                    lastLightUpdateTime = now;
+                } else {
+                    // Otherwise, schedule an update after the throttle delay
+                    lightUpdateTimeout = setTimeout(() => {
+                        lightChange();
+                        lastLightUpdateTime = Date.now();
+                    }, THROTTLE_DELAY - elapsed);
+                }
+            }
+
+            // Convert Celsius to Fahrenheit
+            function cToF(c) {
+                return c * 1.8 + 32.0;
+            }
+
+            function getCurrentDateTimeFormatted() {
+                const now = new Date();
+
+                const hours = now.getHours();
+                const minutes = String(now.getMinutes()).padStart(2, "0");
+                const seconds = String(now.getSeconds()).padStart(2, "0");
+                const month = now.toLocaleString("en-US", { month: "short" });
+                const day = now.getDate();
+
+                return `${hours}:${minutes}:${seconds} ${month} ${day}`;
+            }
+
+            /**
+             * Update the UI based on the terrarium state
+             * @param {Object} state - The terrarium state
+             * @param {boolean} preserveControls - Whether to preserve current control states
+             */
+            function applyStateToUi(state, preserveControls = false) {
+                // Update actuator states if not preserving controls
+                if (!preserveControls) {
+                    fanCheckbox.checked = state.actuators.fans;
+                    misterCheckbox.checked = state.actuators.mist;
+                    lightSlider.value =
+                        state.actuators.lights * LIGHT_SLIDER_MAX_VALUE;
+                    lightsValueDisplay.textContent =
+                        Math.round(state.actuators.lights * 100) + "%";
+
+                    // Update our local state tracking
+                    localState.fans = state.actuators.fans;
+                    localState.mist = state.actuators.mist;
+                    localState.lights = state.actuators.lights;
+                }
+
+                // Update sensor readings if available
+                if (state.sensors != null) {
+                    tempDisplay.innerText =
+                        state.sensors.temp.toFixed(1) +
+                        "°C / " +
+                        cToF(state.sensors.temp).toFixed(1) +
+                        "°F";
+                    humidDisplay.innerText =
+                        (state.sensors.humid * 100).toFixed(1) + "%";
+                }
+
+                // Update timestamp
+                lastUpdated.innerText = getCurrentDateTimeFormatted();
+
+                // Enable controls
+                enableControls();
+
+                // Reset connection state
+                connectionFailed = false;
+                retryCount = 0;
+
+                // Hide any previous error
+                hideError();
+            }
+
+            /**
+             * Merge remote state with local state to prevent UI flashing
+             * @param {Object} remoteState - The state from the server
+             * @returns {Object} - Merged state respecting local user changes
+             */
+            function mergeWithLocalState(remoteState) {
+                // Create a deep copy of the remote state
+                const mergedState = JSON.parse(JSON.stringify(remoteState));
+
+                // Check if a user interaction happened recently
+                const recentInteraction =
+                    Date.now() - lastUserInteraction < DEBOUNCE_POLL_DELAY;
+
+                // Only override with local values if there was a recent interaction
+                if (recentInteraction) {
+                    // Override with our local state
+                    mergedState.actuators.fans = localState.fans;
+                    mergedState.actuators.mist = localState.mist;
+                    mergedState.actuators.lights = localState.lights;
+                } else {
+                    // Update local state from remote state
+                    localState.fans = remoteState.actuators.fans;
+                    localState.mist = remoteState.actuators.mist;
+                    localState.lights = remoteState.actuators.lights;
+                }
+
+                return mergedState;
+            }
+
+            function enableControls() {
+                fanCheckbox.disabled = false;
+                misterCheckbox.disabled = false;
+                lightSlider.disabled = false;
+            }
+
+            function disableControls() {
+                fanCheckbox.disabled = true;
+                misterCheckbox.disabled = true;
+                lightSlider.disabled = true;
+            }
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.classList.add("visible");
+            }
+
+            function hideError() {
+                errorMessage.textContent = "";
+                errorMessage.classList.remove("visible");
+            }
+
+            function showReconnecting() {
+                errorMessage.innerHTML =
+                    '<span class="reconnecting">Attempting to reconnect...</span>';
+                errorMessage.classList.add("visible");
+            }
+
+            async function handleLightScheduleChange() {
+                let lightsValue =
+                    lightScheduleIntensitySlider.value / LIGHT_SLIDER_MAX_VALUE;
+                lightScheduleValueDisplay.textContent =
+                    Math.round(lightsValue * 100) + "%";
+
+                let cfg_update = {
+                    schedule: {
+                        light_intensity: lightsValue,
+                        lights: {
+                            start: lightScheduleOnTimeInput.value,
+                            stop: lightScheduleOffTimeInput.value,
+                        },
+                    },
+                };
+                await updateConfig(cfg_update);
+            }
+
+            /**
+             * Initialize the terrarium UI by fetching the current state
+             * @param {boolean} isPolling - Whether this is a polling update
+             */
+            async function init(isPolling = false) {
+                // Skip polling updates during the debounce period
+                if (isPolling && shouldSkipPolling()) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${BASE_ADDR}/state`);
+
+                    if (!response.ok) {
+                        throw new Error(
+                            `Server responded with status: ${response.status}`,
+                        );
+                    }
+
+                    const data = await response.json();
+
+                    if (!data) {
+                        throw new Error("Received empty response from server");
+                    }
+
+                    // For polling updates, merge with local state to prevent UI flashing
+                    if (isPolling) {
+                        const mergedState = mergeWithLocalState(data);
+                        applyStateToUi(mergedState);
+                    } else {
+                        // For initial load, use remote state directly
+                        applyStateToUi(data);
+                    }
+                } catch (error) {
+                    connectionFailed = true;
+                    disableControls();
+
+                    if (retryCount < MAX_RETRIES) {
+                        retryCount++;
+                        showReconnecting();
+                        setTimeout(() => init(isPolling), RETRY_DELAY);
+                    } else {
+                        showError(
+                            `Failed to connect to terrarium: ${error.message}. Refresh page to retry.`,
+                        );
+                    }
+                }
+
+                // Fetch /config on first init()
+                if (!isPolling) {
+                    let response;
+                    try {
+                        response = await fetch(`${BASE_ADDR}/config`, {
+                            headers: {
+                                Accept: "application/json",
+                            },
+                        });
+                    } catch (error) {
+                        showError(
+                            `Failed to connect to terrarium: ${error.message}. Refresh page to retry.`,
+                        );
+                    }
+                    if (!response.ok) {
+                        throw new Error(
+                            `Server responded with status: ${response.status}`,
+                        );
+                    }
+
+                    const data = await response.json();
+
+                    if (!data) {
+                        throw new Error(
+                            "Received empty /config response from server",
+                        );
+                    }
+
+                    // Update UI with config details
+                    if (data.wifi) {
+                        document.getElementById("ssid").value = data.wifi.ssid;
+                        document.getElementById("password").value =
+                            data.wifi.password;
+                    }
+                    if (data.name) {
+                        document.getElementById("hostname").value = data.name;
+                    }
+                    if (data.schedule) {
+                        if (data.schedule.humidity_setpoint) {
+                            mistMinimumHumidityBox.value = Math.round(
+                                data.schedule.humidity_setpoint * 100,
+                            );
+                        }
+                        if (data.schedule.mist_mode == "Auto") {
+                            mistAutoScheduleRadioButton.checked = true;
+                            mistManualScheduleRadioButton.checked = false;
+                        } else {
+                            mistAutoScheduleRadioButton.checked = false;
+                            mistManualScheduleRadioButton.checked = true;
+                        }
+                        mistMinimumHumidityBox.disabled =
+                            data.schedule.mist_mode != "Auto";
+
+                        if (data.schedule.light_intensity) {
+                            lightScheduleIntensitySlider.value =
+                                data.schedule.light_intensity *
+                                LIGHT_SLIDER_MAX_VALUE;
+                            lightScheduleValueDisplay.textContent =
+                                Math.round(
+                                    data.schedule.light_intensity * 100,
+                                ) + "%";
+                        }
+                        if (data.schedule.lights) {
+                            lightScheduleOnTimeInput.value =
+                                data.schedule.lights.start;
+                            lightScheduleOffTimeInput.value =
+                                data.schedule.lights.stop;
+                        }
+                        if (data.schedule.mist) {
+                            mistScheduleList.setScheduleData(
+                                data.schedule.mist,
+                            );
+                        }
+                        if (data.schedule.fans) {
+                            fanScheduleList.setScheduleData(data.schedule.fans);
+                        }
+                    }
+                }
+            }
+
+            // Initialize the application
+            init(false);
+
+            // Set up polling for updates
+            pollingInterval = setInterval(() => {
+                // Only poll if not in a failed state or if we're still trying to reconnect
+                if (!connectionFailed || retryCount < MAX_RETRIES) {
+                    init(true); // Pass true to indicate this is a polling update
+                }
+            }, POLLING_INTERVAL);
+        </script>
+    </body>
+</html>

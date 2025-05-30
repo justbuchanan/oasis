@@ -1,0 +1,20 @@
+black
+pyyaml
+
+git+https://github.com/cadquery/cadquery
+git+https://github.com/cadquery/cq-cli
+git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
+# cq-editor is more reliably installed with conda/miniconda/mamba, etc
+# git+https://github.com/cadquery/cq-editor
+logbook
+spyder
+PyQt5
+pyqtgraph
+
+jupyter
+
+# deps needed for Fabrication Toolkit
+# wxpython
+
+# TODO: remove use of sec() in honeycomb.py, then drop mpmath dep
+mpmath

@@ -1,0 +1,37 @@
+.alert-warning > .alert-heading {
+    color: #9a6700;
+}
+
+.alert.book-hint.alert-note {
+    border-color: #0969da;
+    background-color: white;
+}
+
+.alert-note > .alert-heading {
+    color: #0969da;
+}
+
+.book-footer {
+    text-align: center;
+}
+
+.book-page img:not(.no-zoom, .book-icon) {
+    cursor: zoom-in;
+    transition: transform 0.2s ease;
+}
+
+.book-page img:not(.no-zoom):hover {
+    transform: scale(1.02);
+}
+
+.img-row {
+    display: flex;
+}
+
+.img-row > .img-column2 {
+    flex: 50%;
+}
+
+.img-column2 > p {
+    text-align: center;
+}

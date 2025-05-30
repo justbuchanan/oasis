@@ -1,0 +1,5 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "LDD-700LS")(type "KiCad")(uri "${KIPRJMOD}/lib/LDD-700LS.kicad_sym")(options "")(descr ""))
+  (lib (name "power_v18")(type "KiCad")(uri "${KIPRJMOD}/lib/power_v18.kicad_sym")(options "")(descr ""))
+)

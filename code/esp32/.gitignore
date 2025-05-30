@@ -1,0 +1,3 @@
+.embuild/
+target/
+components_esp32c3.lock
