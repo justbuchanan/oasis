@@ -15,7 +15,7 @@ Features include:
 - a built-in water tank and mister to provide plants with water and maintain high humidity
 - fans for airflow
 - a temperature+humidity sensor for monitoring environment conditions
-- wifi connectivity to allow control and configuration from your phone or computer (see [web interface](http://localhost:1313/docs/usage_guide/#web-interface))
+- wifi connectivity to allow control and configuration from your phone or computer (see [web interface](/docs/usage_guide/#web-interface))
 
 This project is fully open-source, meaning that the designs for the 3d printed parts, electronics schematics, and software are available to download and modify. Find them on GitHub: https://github.com/justbuchanan/oasis.
 
