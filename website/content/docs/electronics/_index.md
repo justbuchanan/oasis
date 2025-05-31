@@ -50,7 +50,7 @@ The LED board is very simple - it's 5 LEDs wired in series mounted on an aluminu
 
 Find the KiCad design files here: https://github.com/justbuchanan/oasis/tree/main/pcb/ledboard.
 
-TODO: add info on JST connector connector/cable.
+In order to connect to the mainboard, the ledboard needs a 2-pin JST PH connector (for example https://www.amazon.com/dp/B01DUC1O68) soldered onto it.
 
 ### Schematic
 
@@ -62,9 +62,7 @@ TODO: add info on JST connector connector/cable.
 
 ## SHT30 Sensor Board Wiring
 
-The sht30 sensor board needs comes without a cable.
-
-TODO
+The sht30 sensor board comes without a cable. You'll need to solder a standard 4-pin connector cable in order to plug it into the mainboard.
 
 ![sht30_wiring](sht30_wiring.jpg)
 
