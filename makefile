@@ -48,10 +48,6 @@ build/cadquery/sensor_basket.step: cadquery/oasis.py cadquery/util.py oasis_cons
 	@mkdir -p $(@D)
 	PYTHONPATH=./ cq-cli --infile cadquery/oasis.py --expression="SensorBasket(Sht30Board()).shape" --outfile $@
 
-# build/cadquery/oasis.gltf: cadquery/oasis.py cadquery/util.py oasis_constants.py build/pcb/main/pcb.step build/pcb/ledboard/ledboard.step
-# 	@mkdir -p $(@D)
-# 	PYTHONPATH=./ cq-cli --infile cadquery/oasis.py --expression="terrarium()" --outfile $@
-
 build/cadquery/oasis.glb: cadquery/oasis.py cadquery/util.py oasis_constants.py build/pcb/main/pcb.step build/pcb/ledboard/ledboard.step
 	@mkdir -p $(@D)
 	PYTHONPATH=./ cq-cli --infile cadquery/oasis.py --expression="terrarium(explode=0, vent_holes=True)" --outfile $@
@@ -143,10 +139,9 @@ build/pcb/main/pcb_back3d.png: pcb/main/pcb.kicad_pcb
 	kicad-cli pcb render --side bottom --rotate ' -10,0,-90' $(PCB_RENDER_ARGS) --output $@ $^
 
 
-# TODO: don't hardcode PYTHONPATH
 build/pcb/main/gerbers.zip build/pcb/main/bom.csv build/pcb/main/pos.csv &: pcb/main/pcb.kicad_pcb
 	mkdir -p build/pcb/main
-	PYTHONPATH="/usr/lib/python3.13/site-packages:pcb/Fabrication-Toolkit:${PYTHONPATH}" python -m plugins.cli --path $^ --autoTranslate --autoFill
+	PYTHONPATH="pcb/Fabrication-Toolkit:${PYTHONPATH}" python3 -m plugins.cli --path $^ --autoTranslate --autoFill
 	cp pcb/main/production/bom.csv build/pcb/main/bom.csv
 	cp pcb/main/production/positions.csv build/pcb/main/pos.csv
 	cp pcb/main/production/Terrarium_Control_Board*.zip build/pcb/main/gerbers.zip
@@ -197,10 +192,9 @@ build/pcb/ledboard/ledboard_front3d.png: pcb/ledboard/ledboard.kicad_pcb
 	kicad-cli pcb render --zoom 0.9 --side top --rotate ' -10,0,-90' $(PCB_RENDER_ARGS) --output $@ $^
 
 
-# TODO: don't hardcode PYTHONPATH
 build/pcb/ledboard/gerbers.zip build/pcb/ledboard/bom.csv build/pcb/ledboard/pos.csv &: pcb/ledboard/ledboard.kicad_pcb
 	mkdir -p build/pcb/ledboard
-	PYTHONPATH="/usr/lib/python3.13/site-packages:pcb/Fabrication-Toolkit:${PYTHONPATH}" python -m plugins.cli --path $^ --autoTranslate --autoFill
+	PYTHONPATH="pcb/Fabrication-Toolkit:${PYTHONPATH}" python3 -m plugins.cli --path $^ --autoTranslate --autoFill
 	cp pcb/ledboard/production/bom.csv build/pcb/ledboard/bom.csv
 	cp pcb/ledboard/production/positions.csv build/pcb/ledboard/pos.csv
 	cp pcb/ledboard/production/Terrarium_LED_Board*.zip build/pcb/ledboard/gerbers.zip

@@ -1,10 +1,6 @@
 name: Build Electronics
 
 on: push
-  # push:
-  #   branches: [ "main" ]
-  # pull_request:
-  #   branches: [ "main" ]
 
 permissions:
   contents: read
@@ -12,15 +8,12 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5.5.0
       with:
-        python-version: "3.13"
-        cache: 'pip'
+        submodules: true
 
     - name: add kicad ppa
       run: |
@@ -29,21 +22,10 @@ jobs:
     - name: install apt packages
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
-        packages: make cmake cargo kicad pkg-config fontconfig
-        version: 1.6
+        packages: kicad
 
-    - name: install python deps
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install wxPython
-
-    - name: instantiate git submodules
-      run: git submodule update --init
-
-    # TODO: fix issue 'module pcbnew not found'
-    # - name: build pcb outputs
-    #   run: PYTHONPATH=/usr/lib/python3/dist-packages make pcb
+    - name: build pcb outputs
+      run: make pcb
 
     - name: save artifacts
       uses: actions/upload-artifact@v4

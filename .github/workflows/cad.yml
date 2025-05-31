@@ -1,10 +1,6 @@
 name: Build CAD
 
 on: push
-  # push:
-  #   branches: [ "main" ]
-  # pull_request:
-  #   branches: [ "main" ]
 
 permissions:
   contents: read
@@ -12,7 +8,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     steps:
     - uses: actions/checkout@v4
@@ -22,6 +18,8 @@ jobs:
         python-version: "3.13"
         cache: 'pip'
 
+    # Note: this workflow is for the cad models, but we still need kicad in
+    # order to generate 3d models of the circuit boards.
     - name: add kicad ppa
       run: |
         sudo add-apt-repository --yes ppa:kicad/kicad-9.0-releases
@@ -29,16 +27,13 @@ jobs:
     - name: install apt packages
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
-        packages: make cmake cargo kicad pkg-config fontconfig
+        packages: make kicad pkg-config fontconfig
         version: 1.6
 
     - name: install python deps
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
-    - name: instantiate git submodules
-      run: git submodule update --init
 
     - name: render cad outputs
       run: make cadquery

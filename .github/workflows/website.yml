@@ -1,11 +1,10 @@
-name: Build and Deploy Website
+name: Build Website
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:
 
 env:
   IMAGE_NAME: justbuchanan/oasis-terrarium.com
@@ -13,6 +12,7 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       packages: write
@@ -75,4 +75,4 @@ jobs:
           owner: justbuchanan
           token: ${{ secrets.GITHUB_TOKEN }}
           min-versions-to-keep: 5
-          delete-only-untagged-versions: true
+          delete-only-untagged-versions: false
