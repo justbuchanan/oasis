@@ -11,7 +11,7 @@ Oasis is a fully open-source, mostly 3d-printed smart terrarium.
 
 Features include:
 
-- high-power lighting for promoting plant growth
+- [high-power lighting](/docs/random_notes/#light-intensity) for promoting plant growth
 - a built-in water tank and mister to provide plants with water and maintain high humidity
 - fans for airflow
 - a temperature+humidity sensor for monitoring environment conditions
