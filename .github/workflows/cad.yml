@@ -1,4 +1,4 @@
-name: Build CAD
+name: CAD
 
 on: push
 
