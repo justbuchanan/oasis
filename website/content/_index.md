@@ -19,6 +19,6 @@ Features include:
 
 This project is fully open-source, meaning that the designs for the 3d printed parts, electronics schematics, and software are available to download and modify. Find them on GitHub: https://github.com/justbuchanan/oasis.
 
-This website contains a detailed build guide, bill of materials, and other notes on the project.
+This website contains a detailed [build guide](/docs/build_guide), bill of materials, and other notes on the project.
 
 Most of this project is accessible to the average DIYer with access to a 3d printer, however the electronics portion of the project is a bit more involved. See the [Electronics page](/docs/electronics) for more details.

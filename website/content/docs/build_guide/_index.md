@@ -35,6 +35,8 @@ Below is a step-by-step guide on building the terrarium.
 | Top Plug      |
 | Sensor Basket |
 
+See https://www.printables.com/model/1315117-oasis-smart-terrarium.
+
 ### Custom Electronics
 
 This project requires two custom electronics boards: a mainboard and an LED board. See the [Electronics page](/docs/electronics) for more info.
@@ -42,6 +44,8 @@ This project requires two custom electronics boards: a mainboard and an LED boar
 ## 3D Printing
 
 This project requires a number of 3d-printed parts. Most of them need to handle high humidity and/or direct contact with water, so it's important to use a material that can handle that. PLA, for example, is a poor choice. I used PETG for this, but ABS and some other plastics should work well.
+
+Model files (STL/STEP) can be downloaded from [printables.com](https://www.printables.com/model/1315117-oasis-smart-terrarium) or [GitHub](https://github.com/justbuchanan/oasis/releases/tag/v1).
 
 ### Supports
 
