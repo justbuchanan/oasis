@@ -30,7 +30,7 @@ pub struct TerrariumState {
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone)]
 #[serde(untagged)]
-pub enum ActuatorOverrideValue {
+pub enum ActuatorValue {
     Bool(bool),
     Float(f32),
 }
@@ -40,7 +40,7 @@ pub enum ActuatorOverrideValue {
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct ActuatorOverride {
     pub name: String,
-    pub value: ActuatorOverrideValue,
+    pub value: ActuatorValue,
     pub duration_secs: u32,
 }
 

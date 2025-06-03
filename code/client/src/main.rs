@@ -18,8 +18,7 @@ use std::time::Duration;
 use terralib::config::TerrariumConfigUpdate;
 use terralib::terrarium::print_terrarium_state;
 use terralib::types::{
-    ActuatorOverride, ActuatorOverrideSet, ActuatorOverrideValue, FANS, LIGHTS, MIST,
-    TerrariumState,
+    ActuatorOverride, ActuatorOverrideSet, ActuatorValue, FANS, LIGHTS, MIST, TerrariumState,
 };
 
 #[derive(Parser, Debug)]
@@ -244,9 +243,9 @@ fn create_update_data(cmds: &[ControlCommand]) -> ActuatorOverrideSet {
         .iter()
         .map(|cmd| {
             let val = if cmd.actuator_name == MIST || cmd.actuator_name == FANS {
-                ActuatorOverrideValue::Bool(cmd.value > 0.0)
+                ActuatorValue::Bool(cmd.value > 0.0)
             } else {
-                ActuatorOverrideValue::Float(cmd.value)
+                ActuatorValue::Float(cmd.value)
             };
             ActuatorOverride {
                 name: cmd.actuator_name.clone(),
@@ -446,12 +445,12 @@ mod update_data {
                 updates: vec![
                     ActuatorOverride {
                         name: MIST.to_string(),
-                        value: ActuatorOverrideValue::Bool(true),
+                        value: ActuatorValue::Bool(true),
                         duration_secs: 10,
                     },
                     ActuatorOverride {
                         name: LIGHTS.to_string(),
-                        value: ActuatorOverrideValue::Float(0.5),
+                        value: ActuatorValue::Float(0.5),
                         duration_secs: 10,
                     }
                 ],
