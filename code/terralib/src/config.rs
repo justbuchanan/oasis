@@ -80,7 +80,7 @@ impl Schedule {
                 start: "10:00".parse().unwrap(),
                 stop: "22:00".parse().unwrap(),
             }),
-            light_intensity: Some(0.6),
+            light_intensity: Some(0.7),
             fans: vec![ScheduledEvent {
                 start_time: "10:30".parse().unwrap(),
                 duration_secs: 10 * 60,

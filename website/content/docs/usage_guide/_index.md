@@ -43,7 +43,7 @@ Here's a screenshot:
 
 ### Schedule
 
-Oasis defaults to having the lights on at 60% power from 10am to 10pm, but you can adjust this however you'd like based on your selection of plants and personal preferences.
+Oasis defaults to having the lights on at 70% power from 10am to 10pm, but you can adjust this however you'd like based on your selection of plants and personal preferences.
 
 > [!NOTE]
 > The LED lighting in this design is fairly powerful and it's likely that 100% power is too high for many plants. You may need to experiment to determine what the light intensity should be for your setup.
