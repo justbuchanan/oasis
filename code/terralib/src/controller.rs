@@ -1,4 +1,4 @@
-use crate::config::{HumidityMode, Schedule, TerrariumConfig, TerrariumConfigUpdate, Update};
+use crate::config::{Schedule, TerrariumConfig, TerrariumConfigUpdate, Update};
 use crate::terrarium::Terrarium;
 use crate::types::{ActuatorOverrideSet, ActuatorValue, ActuatorValues, FANS, LIGHTS, MIST};
 use anyhow::anyhow;
@@ -121,7 +121,7 @@ impl TerrariumController {
             // - humidity readings lag partially due to the placement of the sensor and lack of air movement.
             // - periodically turning on the fans could help the sensor to get an accurate reading more often
             // - we should add some rate-limiting i.e. "mist for a maximum of one minute straight every ten minutes"
-            if schedule.mist_mode == HumidityMode::Auto {
+            if schedule.auto_mist_enabled {
                 if let Some(setpoint) = schedule.humidity_setpoint {
                     match self.terrarium.lock().unwrap().read_sensors() {
                         Some(sensor_values) => {
@@ -405,7 +405,7 @@ mod controller {
         let terrarium = Arc::new(Mutex::new(FakeTerrarium::new()));
         let cfg = TerrariumConfig {
             schedule: Some(Schedule {
-                mist_mode: HumidityMode::Auto,
+                auto_mist_enabled: true,
                 humidity_setpoint: Some(0.8),
                 ..Schedule::default()
             }),

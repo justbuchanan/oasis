@@ -46,10 +46,10 @@ pub struct Schedule {
     pub lights: Option<TimeRange>,
     pub light_intensity: Option<f32>,
     pub fans: Vec<ScheduledEvent>,
-    // misting schedule. only relevant when mist_mode==Manual.
     pub mist: Vec<ScheduledEvent>,
-    pub mist_mode: HumidityMode,
-    // target minimum humidity. only relevant when mist_mode==Auto.
+    // If true, the mister should automatically turn on to keep the terrarium's
+    // humidity above @humidity_setpoint.
+    pub auto_mist_enabled: bool,
     pub humidity_setpoint: Option<f32>,
 }
 
@@ -64,13 +64,6 @@ pub struct ScheduledEvent {
 pub struct RepeatInfo {
     pub n_hours: u32,
     pub stop_time: Time,
-}
-
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, Copy, Default)]
-pub enum HumidityMode {
-    Auto,
-    #[default]
-    Manual,
 }
 
 impl Schedule {
@@ -96,8 +89,8 @@ impl Schedule {
                 duration_secs: 30,
                 repeat: None,
             }],
+            auto_mist_enabled: false,
             humidity_setpoint: None,
-            mist_mode: HumidityMode::Manual,
         }
     }
 
@@ -126,9 +119,9 @@ impl Schedule {
             Update::NoChange => {}
         }
 
-        match update.mist_mode {
-            Update::Set(mist_mode) => self.mist_mode = mist_mode,
-            Update::Clear => self.mist_mode = HumidityMode::default(),
+        match update.auto_mist_enabled {
+            Update::Set(auto_mist_enabled) => self.auto_mist_enabled = auto_mist_enabled,
+            Update::Clear => self.auto_mist_enabled = false,
             Update::NoChange => {}
         }
 
@@ -150,13 +143,9 @@ impl Schedule {
             }
         }
 
-        if self.mist_mode == HumidityMode::Auto {
-            // Auto mode is handled by the controller based on sensor readings.
-            v.mist = false;
-        } else {
-            v.mist = evaluate_scheduled_events(&self.mist, t);
-        }
-
+        // note: the auto mist feature is handled by the controller, not the
+        // schedule.
+        v.mist = evaluate_scheduled_events(&self.mist, t);
         v.fans = evaluate_scheduled_events(&self.fans, t);
 
         v
@@ -250,7 +239,7 @@ pub struct ScheduleUpdate {
     #[serde(default, skip_serializing_if = "Update::is_no_change")]
     pub mist: Update<Vec<ScheduledEvent>>,
     #[serde(default, skip_serializing_if = "Update::is_no_change")]
-    pub mist_mode: Update<HumidityMode>,
+    pub auto_mist_enabled: Update<bool>,
     #[serde(default, skip_serializing_if = "Update::is_no_change")]
     pub humidity_setpoint: Update<f32>,
 }
@@ -362,8 +351,8 @@ mod schedule {
                     stop_time: "22:00".parse().unwrap(),
                 }),
             }],
+            auto_mist_enabled: false,
             humidity_setpoint: None,
-            mist_mode: HumidityMode::Manual,
         };
 
         assert_eq!(
