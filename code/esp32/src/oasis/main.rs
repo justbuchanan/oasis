@@ -8,11 +8,7 @@ use embedded_svc::io::{Read, Write};
 use embedded_svc::utils::io;
 use esp_idf_svc::fs::littlefs::Littlefs;
 use esp_idf_svc::hal::task::block_on;
-use esp_idf_svc::hal::{
-    gpio,
-    gpio::{PinDriver, Pull},
-    peripherals::Peripherals,
-};
+use esp_idf_svc::hal::{gpio, peripherals::Peripherals};
 use esp_idf_svc::http::client::EspHttpConnection;
 use esp_idf_svc::http::server::EspHttpServer;
 use esp_idf_svc::io::vfs::MountedLittlefs;
@@ -64,7 +60,7 @@ async fn main(spawner: Spawner) {
 
     // setup status led
     let mut status_led =
-        PinDriver::output(peripherals.pins.gpio7).expect("status_led should initialize");
+        gpio::PinDriver::output(peripherals.pins.gpio7).expect("status_led should initialize");
     status_led
         .set_low()
         .expect("driving status led should work");
@@ -347,8 +343,8 @@ async fn reset_button_watcher(
     // button pulls low via 10k R when pressed
     // Some of this code comes from:
     // https://github.com/esp-rs/std-training/blob/5831eba5c7735400580a2e35116b87834f714a13/advanced/button-interrupt/examples/solution.rs
-    let mut rst_button = PinDriver::input(pin).expect("reset pin");
-    rst_button.set_pull(Pull::Up).expect("reset pin");
+    let mut rst_button = gpio::PinDriver::input(pin).expect("reset pin");
+    rst_button.set_pull(gpio::Pull::Up).expect("reset pin");
 
     loop {
         rst_button.wait_for_falling_edge().await.unwrap();
@@ -427,7 +423,7 @@ async fn wifi_management_task(wifi: Arc<Mutex<AsyncWifi<EspWifi<'static>>>>) {
     loop {
         match select::select(
             WIFI_DETAILS_CHANNEL.receive(),
-            Timer::after(Duration::from_secs(60)),
+            Timer::after(Duration::from_secs(120)),
         )
         .await
         {
@@ -484,6 +480,21 @@ async fn wifi_management_task(wifi: Arc<Mutex<AsyncWifi<EspWifi<'static>>>>) {
                 }
             }
             select::Either::Second(_) => {
+                // print a wifi status update
+                let wifi = wifi.lock().unwrap();
+                match wifi.wifi().sta_netif().get_ip_info() {
+                    Ok(ip_info) => {
+                        log::info!("Terrarium is live at ip address: {}", ip_info.ip)
+                    }
+                    Err(err) => log::error!("Error getting ip address: {}", err),
+                }
+                match wifi.is_connected() {
+                    Ok(is_connected) => {
+                        log::info!("wifi.is_connected() -> {}", is_connected);
+                    }
+                    Err(err) => log::error!("Error calling wifi.is_connected(): {}", err),
+                }
+
                 // TODO: test network connection
             }
         };
