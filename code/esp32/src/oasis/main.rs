@@ -29,7 +29,7 @@ use terralib::config::{TerrariumConfig, TerrariumConfigUpdate, Update, WifiDetai
 use terralib::controller::{TerrariumController, terrarium_controller_main_loop};
 use terralib::influxdb;
 use terralib::terrarium::{get_terrarium_state, print_terrarium_info};
-use terralib::types::{SensorValues, TerrariumState, UpdateData};
+use terralib::types::{ActuatorOverrideSet, SensorValues, TerrariumState};
 use terrarium::effects;
 use terrarium::effects::CancelContext;
 use terrarium::real_terrarium::RealTerrarium;
@@ -184,7 +184,7 @@ async fn main(spawner: Spawner) {
             let mut buf = vec![0; len];
             req.read_exact(&mut buf)?;
 
-            let update_data = match serde_json::from_slice::<UpdateData>(&buf) {
+            let update_data = match serde_json::from_slice::<ActuatorOverrideSet>(&buf) {
                 Err(e) => {
                     req.into_status_response(413)?
                         .write_all(format!("json parse error: '{e}'").as_bytes())?;

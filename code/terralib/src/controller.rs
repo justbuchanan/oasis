@@ -1,6 +1,8 @@
 use crate::config::{HumidityMode, Schedule, TerrariumConfig, TerrariumConfigUpdate, Update};
 use crate::terrarium::Terrarium;
-use crate::types::{ActuatorValues, FANS, LIGHTS, MIST, UpdateData, UpdateValue};
+use crate::types::{
+    ActuatorOverrideSet, ActuatorOverrideValue, ActuatorValues, FANS, LIGHTS, MIST,
+};
 use anyhow::anyhow;
 use embassy_time::Timer;
 use std::collections::HashMap;
@@ -10,7 +12,7 @@ use std::sync::{Arc, Mutex};
 const MAX_OVERRIDE_DURATION_SECS: u32 = 30 * 60;
 
 struct ActuatorOverride {
-    value: UpdateValue,
+    value: ActuatorOverrideValue,
     expiration: jiff::civil::Time,
 }
 
@@ -135,7 +137,7 @@ impl TerrariumController {
         if let Some(lights_override) = self.active_overrides.get(LIGHTS) {
             if lights_override.expiration < t {
                 self.active_overrides.remove(LIGHTS);
-            } else if let UpdateValue::Float(l) = lights_override.value {
+            } else if let ActuatorOverrideValue::Float(l) = lights_override.value {
                 act_val.lights = l;
             } else {
                 // PANIC - this shouldn't happen
@@ -144,7 +146,7 @@ impl TerrariumController {
         if let Some(mist_override) = self.active_overrides.get(MIST) {
             if mist_override.expiration < t {
                 self.active_overrides.remove(MIST);
-            } else if let UpdateValue::Bool(m) = mist_override.value {
+            } else if let ActuatorOverrideValue::Bool(m) = mist_override.value {
                 act_val.mist = m;
             } else {
                 // PANIC - this shouldn't happen
@@ -153,7 +155,7 @@ impl TerrariumController {
         if let Some(fan_override) = self.active_overrides.get(FANS) {
             if fan_override.expiration < t {
                 self.active_overrides.remove(FANS);
-            } else if let UpdateValue::Bool(f) = fan_override.value {
+            } else if let ActuatorOverrideValue::Bool(f) = fan_override.value {
                 act_val.fans = f;
             } else {
                 // PANIC - this shouldn't happen
@@ -174,7 +176,7 @@ impl TerrariumController {
     // and/or mister. This function adds ActuatorOverride entries to the
     // controller's active_overrides list, but they are not actually executed
     // until the next call to run().
-    pub fn handle_control_cmd(&mut self, update_data: &UpdateData) -> anyhow::Result<()> {
+    pub fn handle_control_cmd(&mut self, update_data: &ActuatorOverrideSet) -> anyhow::Result<()> {
         if update_data.updates.is_empty() {
             return Err(anyhow!("Empty control request"));
         }
@@ -184,7 +186,7 @@ impl TerrariumController {
         for ud in &update_data.updates {
             match ud.name.as_str() {
                 MIST => match ud.value {
-                    UpdateValue::Bool(_) => {
+                    ActuatorOverrideValue::Bool(_) => {
                         let duration = std::cmp::min(ud.duration_secs, MAX_OVERRIDE_DURATION_SECS);
                         self.active_overrides.insert(
                             MIST.to_string(),
@@ -198,7 +200,7 @@ impl TerrariumController {
                     _ => return Err(anyhow!("Expected bool for mist")),
                 },
                 LIGHTS => match ud.value {
-                    UpdateValue::Float(l) => {
+                    ActuatorOverrideValue::Float(l) => {
                         let duration = std::cmp::min(ud.duration_secs, MAX_OVERRIDE_DURATION_SECS);
                         if !(0.0..=1.0).contains(&l) {
                             return Err(anyhow!(
@@ -218,7 +220,7 @@ impl TerrariumController {
                     _ => return Err(anyhow!("Expected float for lights")),
                 },
                 FANS => match ud.value {
-                    UpdateValue::Bool(_) => {
+                    ActuatorOverrideValue::Bool(_) => {
                         let duration = std::cmp::min(ud.duration_secs, MAX_OVERRIDE_DURATION_SECS);
                         self.active_overrides.insert(
                             FANS.to_string(),
@@ -279,7 +281,7 @@ mod controller {
     use super::*;
     use crate::config::WifiDetails;
     use crate::terrarium::FakeTerrarium;
-    use crate::types::UpdateItem;
+    use crate::types::ActuatorOverride;
 
     #[test]
     fn update_config() {
@@ -311,10 +313,10 @@ mod controller {
             Arc::new(Mutex::new(FakeTerrarium::new())),
             TerrariumConfig::default(),
         );
-        let ud = UpdateData {
-            updates: vec![UpdateItem {
+        let ud = ActuatorOverrideSet {
+            updates: vec![ActuatorOverride {
                 name: "blaster".to_string(),
-                value: UpdateValue::Float(1000.0),
+                value: ActuatorOverrideValue::Float(1000.0),
                 duration_secs: 15,
             }],
         };
@@ -335,21 +337,21 @@ mod controller {
         assert!(!ctl.terrarium().lock().unwrap().get_mist());
         assert!(!ctl.terrarium().lock().unwrap().get_fans());
         assert_eq!(ctl.terrarium().lock().unwrap().get_lights(), 0.0);
-        let ud = UpdateData {
+        let ud = ActuatorOverrideSet {
             updates: vec![
-                UpdateItem {
+                ActuatorOverride {
                     name: MIST.to_string(),
-                    value: UpdateValue::Bool(true),
+                    value: ActuatorOverrideValue::Bool(true),
                     duration_secs: 5,
                 },
-                UpdateItem {
+                ActuatorOverride {
                     name: FANS.to_string(),
-                    value: UpdateValue::Bool(true),
+                    value: ActuatorOverrideValue::Bool(true),
                     duration_secs: 10,
                 },
-                UpdateItem {
+                ActuatorOverride {
                     name: LIGHTS.to_string(),
-                    value: UpdateValue::Float(0.7),
+                    value: ActuatorOverrideValue::Float(0.7),
                     duration_secs: 15,
                 },
             ],
@@ -367,10 +369,10 @@ mod controller {
             Arc::new(Mutex::new(FakeTerrarium::new())),
             TerrariumConfig::default(),
         );
-        let ud = UpdateData {
-            updates: vec![UpdateItem {
+        let ud = ActuatorOverrideSet {
+            updates: vec![ActuatorOverride {
                 name: MIST.to_string(),
-                value: UpdateValue::Float(1000.0),
+                value: ActuatorOverrideValue::Float(1000.0),
                 duration_secs: 100,
             }],
         };
@@ -425,20 +427,20 @@ mod controller {
 #[cfg(test)]
 mod json_format {
     use super::*;
-    use crate::types::UpdateItem;
+    use crate::types::ActuatorOverride;
 
     #[test]
     fn serialize() {
-        let data = UpdateData {
+        let data = ActuatorOverrideSet {
             updates: vec![
-                UpdateItem {
+                ActuatorOverride {
                     name: MIST.to_string(),
-                    value: UpdateValue::Bool(true),
+                    value: ActuatorOverrideValue::Bool(true),
                     duration_secs: 10,
                 },
-                UpdateItem {
+                ActuatorOverride {
                     name: LIGHTS.to_string(),
-                    value: UpdateValue::Float(0.5),
+                    value: ActuatorOverrideValue::Float(0.5),
                     duration_secs: 15,
                 },
             ],

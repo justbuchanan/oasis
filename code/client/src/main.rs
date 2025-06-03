@@ -17,7 +17,10 @@ use std::io::BufReader;
 use std::time::Duration;
 use terralib::config::TerrariumConfigUpdate;
 use terralib::terrarium::print_terrarium_state;
-use terralib::types::{FANS, LIGHTS, MIST, TerrariumState, UpdateData, UpdateItem, UpdateValue};
+use terralib::types::{
+    ActuatorOverride, ActuatorOverrideSet, ActuatorOverrideValue, FANS, LIGHTS, MIST,
+    TerrariumState,
+};
 
 #[derive(Parser, Debug)]
 #[command(about = "Oasis terrarium command-line client")]
@@ -236,16 +239,16 @@ struct MdnsInfo {
     hostname: String,
 }
 
-fn create_update_data(cmds: &[ControlCommand]) -> UpdateData {
+fn create_update_data(cmds: &[ControlCommand]) -> ActuatorOverrideSet {
     let updates = cmds
         .iter()
         .map(|cmd| {
             let val = if cmd.actuator_name == MIST || cmd.actuator_name == FANS {
-                UpdateValue::Bool(cmd.value > 0.0)
+                ActuatorOverrideValue::Bool(cmd.value > 0.0)
             } else {
-                UpdateValue::Float(cmd.value)
+                ActuatorOverrideValue::Float(cmd.value)
             };
-            UpdateItem {
+            ActuatorOverride {
                 name: cmd.actuator_name.clone(),
                 value: val,
                 duration_secs: cmd.duration as u32,
@@ -253,7 +256,7 @@ fn create_update_data(cmds: &[ControlCommand]) -> UpdateData {
         })
         .collect();
 
-    UpdateData { updates }
+    ActuatorOverrideSet { updates }
 }
 
 #[derive(PartialEq, Debug)]
@@ -439,16 +442,16 @@ mod update_data {
         let update_data = create_update_data(&cmds);
         assert_eq!(
             update_data,
-            UpdateData {
+            ActuatorOverrideSet {
                 updates: vec![
-                    UpdateItem {
+                    ActuatorOverride {
                         name: MIST.to_string(),
-                        value: UpdateValue::Bool(true),
+                        value: ActuatorOverrideValue::Bool(true),
                         duration_secs: 10,
                     },
-                    UpdateItem {
+                    ActuatorOverride {
                         name: LIGHTS.to_string(),
-                        value: UpdateValue::Float(0.5),
+                        value: ActuatorOverrideValue::Float(0.5),
                         duration_secs: 10,
                     }
                 ],

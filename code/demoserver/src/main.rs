@@ -13,7 +13,7 @@ use std::sync::{Arc, Mutex};
 use terralib::config::{TerrariumConfig, TerrariumConfigUpdate, WifiDetails};
 use terralib::controller::TerrariumController;
 use terralib::terrarium::{FakeTerrarium, get_terrarium_state, print_terrarium_info};
-use terralib::types::{TerrariumState, UpdateData};
+use terralib::types::{ActuatorOverrideSet, TerrariumState};
 
 const INDEX_HTML: &str = include_str!("../../esp32/src/oasis/index.html");
 
@@ -65,7 +65,7 @@ async fn state(
 
 async fn control(
     State(controller): State<Arc<Mutex<TerrariumController>>>,
-    Json(cmd): Json<UpdateData>,
+    Json(cmd): Json<ActuatorOverrideSet>,
 ) -> StatusCode {
     // TODO: different error codes depending on what happened
     log::info!("/control called with {cmd:?}");

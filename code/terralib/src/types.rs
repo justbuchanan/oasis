@@ -30,19 +30,21 @@ pub struct TerrariumState {
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone)]
 #[serde(untagged)]
-pub enum UpdateValue {
+pub enum ActuatorOverrideValue {
     Bool(bool),
     Float(f32),
 }
 
+// Represents a temporary override of a single actuator. For example "set the
+// lights to 0.75 for 60 seconds".
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
-pub struct UpdateItem {
+pub struct ActuatorOverride {
     pub name: String,
-    pub value: UpdateValue,
+    pub value: ActuatorOverrideValue,
     pub duration_secs: u32,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
-pub struct UpdateData {
-    pub updates: Vec<UpdateItem>,
+pub struct ActuatorOverrideSet {
+    pub updates: Vec<ActuatorOverride>,
 }
