@@ -264,6 +264,15 @@
                 color: #666;
             }
 
+            #auto-mist-container {
+                display: flex;
+                align-items: center;
+            }
+
+            #auto-mist-container input[type="checkbox"] {
+                margin-right: 10px;
+            }
+
             x-schedule-entry {
                 /*                display: block;*/
                 display: flex;
@@ -401,14 +410,10 @@
 
             <h3>Mist</h3>
             <hr />
-            <input
-                type="radio"
-                id="mist-auto-schedule"
-                name="mist_schedule_selection"
-                value="auto"
-            />
-            <label for="mist-auto-schedule">Auto</label>
-            <div class="mist-auto-config-box">
+
+            <h4>Auto Mist</h4>
+            <div id="auto-mist-container">
+                <input type="checkbox" id="auto-mist-enabled" disabled />
                 <label for="mist-minimum-humidity" disabled
                     >Minimum Humidity:</label
                 >
@@ -422,13 +427,7 @@
                 %
             </div>
 
-            <input
-                type="radio"
-                id="mist-manual-schedule"
-                name="mist_schedule_selection"
-                value="manual"
-            />
-            <label for="mist-manual-schedule">Manual</label>
+            <h4>Mist Schedule</h4>
             <x-schedule-list id="mist-schedule-list"></x-schedule-list>
 
             <h3>Fans</h3>
@@ -524,13 +523,10 @@
                 "light-schedule-off-time",
             );
 
+            const autoMistEnabledCheckbox =
+                document.getElementById("auto-mist-enabled");
             const mistMinimumHumidityBox = document.getElementById(
                 "mist-minimum-humidity",
-            );
-            const mistAutoScheduleRadioButton =
-                document.getElementById("mist-auto-schedule");
-            const mistManualScheduleRadioButton = document.getElementById(
-                "mist-manual-schedule",
             );
 
             const wifiForm = document.getElementById("wifi-form");
@@ -855,6 +851,15 @@
                     lightScheduleIntensitySlider.value * 5 + "%";
             });
 
+            autoMistEnabledCheckbox.addEventListener("change", async () => {
+                let cfg_update = {
+                    schedule: {
+                        auto_mist_enabled: autoMistEnabledCheckbox.checked,
+                    },
+                };
+                mistMinimumHumidityBox.disabled = !autoMistEnabledCheckbox.checked;
+                await updateConfig(cfg_update);
+            });
             mistMinimumHumidityBox.addEventListener("change", async () => {
                 let cfg_update = {
                     schedule: {
@@ -864,27 +869,6 @@
                 };
                 await updateConfig(cfg_update);
             });
-            async function mistScheduleTypeChanged() {
-                console.log("mist schedule type changed");
-                mistMinimumHumidityBox.disabled =
-                    !mistAutoScheduleRadioButton.checked;
-                cfg_update = {
-                    schedule: {
-                        mist_mode: mistAutoScheduleRadioButton.checked
-                            ? "Auto"
-                            : "Manual",
-                    },
-                };
-                await updateConfig(cfg_update);
-            }
-            mistAutoScheduleRadioButton.addEventListener(
-                "input",
-                mistScheduleTypeChanged,
-            );
-            mistManualScheduleRadioButton.addEventListener(
-                "input",
-                mistScheduleTypeChanged,
-            );
 
             mistScheduleList.addEventListener(
                 "x-schedule-list-changed",
@@ -1060,12 +1044,16 @@
                 fanCheckbox.disabled = false;
                 misterCheckbox.disabled = false;
                 lightSlider.disabled = false;
+
+                autoMistEnabledCheckbox.disabled = false;
             }
 
             function disableControls() {
                 fanCheckbox.disabled = true;
                 misterCheckbox.disabled = true;
                 lightSlider.disabled = true;
+
+                autoMistEnabledCheckbox.disabled = true;
             }
 
             function showError(message) {
@@ -1188,20 +1176,14 @@
                         document.getElementById("hostname").value = data.name;
                     }
                     if (data.schedule) {
+                        autoMistEnabledCheckbox.checked =
+                            data.schedule.auto_mist_enabled;
                         if (data.schedule.humidity_setpoint) {
                             mistMinimumHumidityBox.value = Math.round(
                                 data.schedule.humidity_setpoint * 100,
                             );
                         }
-                        if (data.schedule.mist_mode == "Auto") {
-                            mistAutoScheduleRadioButton.checked = true;
-                            mistManualScheduleRadioButton.checked = false;
-                        } else {
-                            mistAutoScheduleRadioButton.checked = false;
-                            mistManualScheduleRadioButton.checked = true;
-                        }
-                        mistMinimumHumidityBox.disabled =
-                            data.schedule.mist_mode != "Auto";
+                        mistMinimumHumidityBox.disabled = !data.schedule.auto_mist_enabled;
 
                         if (data.schedule.light_intensity) {
                             lightScheduleIntensitySlider.value =
