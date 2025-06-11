@@ -9,6 +9,8 @@ use std::sync::{Arc, Mutex};
 // Max amount of time that a control override can specify is 30 minutes.
 const MAX_OVERRIDE_DURATION_SECS: u32 = 30 * 60;
 
+const DEFAULT_TIMEZONE: &'static str = "America/Los_Angeles";
+
 struct ActuatorOverride {
     value: ActuatorValue,
     expiration: jiff::civil::Time,
@@ -89,6 +91,12 @@ impl TerrariumController {
             Update::NoChange => {}
         };
 
+        match &update.timezone {
+            Update::Set(timezone) => self.config.timezone = Some(timezone.clone()),
+            Update::Clear => self.config.timezone = None,
+            Update::NoChange => {}
+        }
+
         match &update.influxdb {
             Update::Set(influxdb) => self.config.influxdb = Some(influxdb.clone()),
             Update::Clear => self.config.influxdb = None,
@@ -99,7 +107,7 @@ impl TerrariumController {
     }
 
     pub fn run(&mut self) -> anyhow::Result<()> {
-        let t = get_local_time();
+        let t = self.get_local_time();
 
         let mut act_val = ActuatorValues::default();
 
@@ -179,7 +187,7 @@ impl TerrariumController {
             return Err(anyhow!("Empty control request"));
         }
 
-        let now = get_local_time();
+        let now = self.get_local_time();
 
         for ud in &update_data.updates {
             match ud.name.as_str() {
@@ -239,6 +247,29 @@ impl TerrariumController {
 
         Ok(())
     }
+
+    // Uses the configured timezone if possible, otherwise defaults to US West Coast time.
+    fn get_local_time(&self) -> jiff::civil::Time {
+        jiff::Timestamp::now().to_zoned(self.get_timezone()).time()
+    }
+
+    fn get_timezone(&self) -> jiff::tz::TimeZone {
+        self.config
+            .timezone
+            .as_ref()
+            .and_then(|tz_name| {
+                jiff::tz::TimeZone::get(tz_name)
+                    .map_err(|err| {
+                        log::warn!("Invalid timezone: '{}', {}", tz_name, err);
+                        err
+                    })
+                    .ok()
+            })
+            .unwrap_or_else(|| {
+                jiff::tz::TimeZone::get(DEFAULT_TIMEZONE)
+                    .expect("Default timezone should always be valid")
+            })
+    }
 }
 
 // Spins until the mutex can be acquired. If Mutex.lock() is used directly in async code, we get deadlocks.
@@ -262,16 +293,6 @@ pub async fn terrarium_controller_main_loop(controller: Arc<Mutex<TerrariumContr
             log::error!("Terrarium run() errored with: {err}");
         }
     }
-}
-
-// TODO: don't hard-code timezone - this needs to be a setting in TerrariumConfig
-fn get_local_time() -> jiff::civil::Time {
-    jiff::Timestamp::now()
-        .to_zoned(
-            jiff::tz::TimeZone::get("America/Los_Angeles")
-                .expect("timezone retrieval should never fail"),
-        )
-        .time()
 }
 
 #[cfg(test)]

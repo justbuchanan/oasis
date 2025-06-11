@@ -10,6 +10,7 @@ pub struct TerrariumConfig {
     pub name: Option<String>,
     pub wifi: Option<WifiDetails>,
     pub schedule: Option<Schedule>,
+    pub timezone: Option<String>,
     pub influxdb: Option<influxdb::Config>,
 }
 
@@ -19,6 +20,7 @@ impl TerrariumConfig {
             name: Some("oasis".into()),
             wifi: None,
             schedule: Some(Schedule::new_with_reasonable_defaults()),
+            timezone: None,
             influxdb: None,
         }
     }
@@ -212,6 +214,8 @@ pub struct TerrariumConfigUpdate {
     #[serde(default, skip_serializing_if = "Update::is_no_change")]
     pub schedule: Update<ScheduleUpdate>,
     #[serde(default, skip_serializing_if = "Update::is_no_change")]
+    pub timezone: Update<String>,
+    #[serde(default, skip_serializing_if = "Update::is_no_change")]
     pub influxdb: Update<influxdb::Config>,
 }
 
@@ -264,6 +268,9 @@ impl TerrariumConfigUpdate {
                 return Err(anyhow!("Name can not be empty string"));
             }
             // TODO: name should be a valid domain name identifier
+        }
+        if let Update::Set(timezone) = &self.timezone {
+            let _tz = jiff::tz::TimeZone::get(timezone)?;
         }
         Ok(())
     }
@@ -520,8 +527,9 @@ mod config_update {
         let upd_expect = TerrariumConfigUpdate {
             name: Update::Set("justin".to_string()),
             wifi: Update::Clear,
-            influxdb: Update::NoChange,
             schedule: Update::NoChange,
+            timezone: Update::NoChange,
+            influxdb: Update::NoChange,
         };
         assert_eq!(upd, upd_expect);
     }
