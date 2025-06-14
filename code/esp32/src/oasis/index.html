@@ -418,13 +418,20 @@
                     >Minimum Humidity:</label
                 >
                 <input
-                    type="number"
+                    type="range"
                     id="mist-minimum-humidity"
-                    min="10"
+                    class="slider"
+                    min="0"
                     max="95"
+                    value="0"
                     disabled
                 />
-                %
+                <div
+                    class="value-display"
+                    id="mist-minimum-humidity-value-display"
+                >
+                    0%
+                </div>
             </div>
 
             <h4>Mist Schedule</h4>
@@ -525,8 +532,11 @@
 
             const autoMistEnabledCheckbox =
                 document.getElementById("auto-mist-enabled");
-            const mistMinimumHumidityBox = document.getElementById(
+            const mistMinimumHumiditySlider = document.getElementById(
                 "mist-minimum-humidity",
+            );
+            const mistMinimumHumidityValueDisplay = document.getElementById(
+                "mist-minimum-humidity-value-display",
             );
 
             const wifiForm = document.getElementById("wifi-form");
@@ -852,22 +862,27 @@
             });
 
             autoMistEnabledCheckbox.addEventListener("change", async () => {
+                mistMinimumHumiditySlider.disabled =
+                    !autoMistEnabledCheckbox.checked;
                 let cfg_update = {
                     schedule: {
                         auto_mist_enabled: autoMistEnabledCheckbox.checked,
                     },
                 };
-                mistMinimumHumidityBox.disabled = !autoMistEnabledCheckbox.checked;
                 await updateConfig(cfg_update);
             });
-            mistMinimumHumidityBox.addEventListener("change", async () => {
+            mistMinimumHumiditySlider.addEventListener("change", async () => {
                 let cfg_update = {
                     schedule: {
                         humidity_setpoint:
-                            parseFloat(mistMinimumHumidityBox.value) / 100.0,
+                            parseFloat(mistMinimumHumiditySlider.value) / 100.0,
                     },
                 };
                 await updateConfig(cfg_update);
+            });
+            mistMinimumHumiditySlider.addEventListener("input", async () => {
+                mistMinimumHumidityValueDisplay.textContent =
+                    Math.round(mistMinimumHumiditySlider.value) + "%";
             });
 
             mistScheduleList.addEventListener(
@@ -1178,12 +1193,17 @@
                     if (data.schedule) {
                         autoMistEnabledCheckbox.checked =
                             data.schedule.auto_mist_enabled;
+                        mistMinimumHumiditySlider.disabled =
+                            !data.schedule.auto_mist_enabled;
                         if (data.schedule.humidity_setpoint) {
-                            mistMinimumHumidityBox.value = Math.round(
+                            mistMinimumHumiditySlider.value = Math.round(
                                 data.schedule.humidity_setpoint * 100,
                             );
+                            mistMinimumHumidityValueDisplay.textContent =
+                                Math.round(
+                                    data.schedule.humidity_setpoint * 100,
+                                ) + "%";
                         }
-                        mistMinimumHumidityBox.disabled = !data.schedule.auto_mist_enabled;
 
                         if (data.schedule.light_intensity) {
                             lightScheduleIntensitySlider.value =
