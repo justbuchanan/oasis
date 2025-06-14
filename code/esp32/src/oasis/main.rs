@@ -21,13 +21,13 @@ use esp_idf_svc::{eventloop::EspSystemEventLoop, nvs::EspDefaultNvsPartition};
 use rand::Rng;
 use std::fs::File;
 use std::sync::{Arc, Mutex};
+use terralib::cancel_context::CancelContext;
 use terralib::config::{TerrariumConfig, TerrariumConfigUpdate, Update, WifiDetails};
 use terralib::controller::{TerrariumController, terrarium_controller_main_loop};
 use terralib::influxdb;
 use terralib::terrarium::{get_terrarium_state, print_terrarium_info};
 use terralib::types::{ActuatorOverrideSet, SensorValues, TerrariumState};
 use terrarium::effects;
-use terrarium::effects::CancelContext;
 use terrarium::real_terrarium::RealTerrarium;
 
 const INDEX_HTML: &str = include_str!("index.html");

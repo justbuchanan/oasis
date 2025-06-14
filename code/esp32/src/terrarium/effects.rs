@@ -1,10 +1,9 @@
 use core::ffi::c_void;
 use embassy_futures::select;
-use embassy_sync::blocking_mutex::raw::NoopRawMutex;
-use embassy_sync::signal::Signal;
 use embassy_time::{Duration, Timer};
 use esp_idf_svc::sys;
 use std::sync::{Arc, Mutex};
+use terralib::cancel_context::CancelContext;
 use terralib::terrarium::Terrarium;
 
 const BASELINE_BRIGHTNESS: f32 = 0.15; // Default dim level when not flashing
@@ -131,44 +130,6 @@ fn random() -> u64 {
             std::mem::size_of::<u32>(),
         );
         out as u64
-    }
-}
-
-// Context object used to cancel an async operation and optionally wait for it to complete.
-pub struct CancelContext {
-    cancel_signal: Signal<NoopRawMutex, ()>,
-    done_signal: Signal<NoopRawMutex, ()>,
-}
-
-impl Default for CancelContext {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl CancelContext {
-    pub fn new() -> Self {
-        Self {
-            cancel_signal: Signal::new(),
-            done_signal: Signal::new(),
-        }
-    }
-
-    pub fn cancel(&self) {
-        self.cancel_signal.signal(());
-    }
-
-    pub async fn cancel_and_wait(&self) {
-        self.cancel();
-        self.done_signal.wait().await
-    }
-
-    pub async fn wait_for_cancel(&self) {
-        self.cancel_signal.wait().await
-    }
-
-    pub fn done(&self) {
-        self.done_signal.signal(());
     }
 }
 
