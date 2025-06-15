@@ -1,6 +1,6 @@
 use crate::config::{Schedule, TerrariumConfig, TerrariumConfigUpdate, Update};
 use crate::terrarium::Terrarium;
-use crate::types::{ActuatorOverrideSet, ActuatorValue, ActuatorValues, FANS, LIGHTS, MIST};
+use crate::types::{Actuator, ActuatorOverrideSet, ActuatorValue, ActuatorValues};
 use anyhow::anyhow;
 use embassy_time::Timer;
 use std::collections::HashMap;
@@ -23,7 +23,7 @@ struct ActuatorOverride {
 pub struct TerrariumController {
     terrarium: Arc<Mutex<dyn Terrarium + Send>>,
     config: TerrariumConfig,
-    active_overrides: HashMap<String, ActuatorOverride>,
+    active_overrides: HashMap<Actuator, ActuatorOverride>,
     // TODO: use a mutex for external_light_control?
     external_light_control: bool,
 }
@@ -140,27 +140,27 @@ impl TerrariumController {
         // Apply overrides / temporary controls.
         // If an override is expired, remove it. Otherwise, use its value to
         // override whatever is configured in the schedule.
-        if let Some(lights_override) = self.active_overrides.get(LIGHTS) {
+        if let Some(lights_override) = self.active_overrides.get(&Actuator::Lights) {
             if lights_override.expiration < t {
-                self.active_overrides.remove(LIGHTS);
+                self.active_overrides.remove(&Actuator::Lights);
             } else if let ActuatorValue::Float(l) = lights_override.value {
                 act_val.lights = l;
             } else {
                 // PANIC - this shouldn't happen
             }
         }
-        if let Some(mist_override) = self.active_overrides.get(MIST) {
+        if let Some(mist_override) = self.active_overrides.get(&Actuator::Mist) {
             if mist_override.expiration < t {
-                self.active_overrides.remove(MIST);
+                self.active_overrides.remove(&Actuator::Mist);
             } else if let ActuatorValue::Bool(m) = mist_override.value {
                 act_val.mist = m;
             } else {
                 // PANIC - this shouldn't happen
             }
         }
-        if let Some(fan_override) = self.active_overrides.get(FANS) {
+        if let Some(fan_override) = self.active_overrides.get(&Actuator::Fans) {
             if fan_override.expiration < t {
-                self.active_overrides.remove(FANS);
+                self.active_overrides.remove(&Actuator::Fans);
             } else if let ActuatorValue::Bool(f) = fan_override.value {
                 act_val.fans = f;
             } else {
@@ -190,12 +190,12 @@ impl TerrariumController {
         let now = self.get_local_time();
 
         for ud in &update_data.updates {
-            match ud.name.as_str() {
-                MIST => match ud.value {
+            match ud.actuator {
+                Actuator::Mist => match ud.value {
                     ActuatorValue::Bool(_) => {
                         let duration = std::cmp::min(ud.duration_secs, MAX_OVERRIDE_DURATION_SECS);
                         self.active_overrides.insert(
-                            MIST.to_string(),
+                            Actuator::Mist,
                             ActuatorOverride {
                                 value: ud.value,
                                 expiration: now
@@ -205,7 +205,7 @@ impl TerrariumController {
                     }
                     _ => return Err(anyhow!("Expected bool for mist")),
                 },
-                LIGHTS => match ud.value {
+                Actuator::Lights => match ud.value {
                     ActuatorValue::Float(l) => {
                         let duration = std::cmp::min(ud.duration_secs, MAX_OVERRIDE_DURATION_SECS);
                         if !(0.0..=1.0).contains(&l) {
@@ -215,7 +215,7 @@ impl TerrariumController {
                             ));
                         }
                         self.active_overrides.insert(
-                            LIGHTS.to_string(),
+                            Actuator::Lights,
                             ActuatorOverride {
                                 value: ud.value,
                                 expiration: now
@@ -225,11 +225,11 @@ impl TerrariumController {
                     }
                     _ => return Err(anyhow!("Expected float for lights")),
                 },
-                FANS => match ud.value {
+                Actuator::Fans => match ud.value {
                     ActuatorValue::Bool(_) => {
                         let duration = std::cmp::min(ud.duration_secs, MAX_OVERRIDE_DURATION_SECS);
                         self.active_overrides.insert(
-                            FANS.to_string(),
+                            Actuator::Fans,
                             ActuatorOverride {
                                 value: ud.value,
                                 expiration: now
@@ -239,9 +239,6 @@ impl TerrariumController {
                     }
                     _ => return Err(anyhow!("Expected bool for fan")),
                 },
-                _ => {
-                    return Err(anyhow!("Unknown actuator name '{}'", ud.name));
-                }
             }
         }
 
@@ -327,27 +324,6 @@ mod controller {
     }
 
     #[test]
-    fn invalid_actuator() {
-        let mut ctl = TerrariumController::new(
-            Arc::new(Mutex::new(FakeTerrarium::new())),
-            TerrariumConfig::default(),
-        );
-        let ud = ActuatorOverrideSet {
-            updates: vec![ActuatorOverride {
-                name: "blaster".to_string(),
-                value: ActuatorValue::Float(1000.0),
-                duration_secs: 15,
-            }],
-        };
-        let result = ctl.handle_control_cmd(&ud);
-        assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "Unknown actuator name 'blaster'"
-        );
-    }
-
-    #[test]
     fn basic() {
         let mut ctl = TerrariumController::new(
             Arc::new(Mutex::new(FakeTerrarium::new())),
@@ -359,17 +335,17 @@ mod controller {
         let ud = ActuatorOverrideSet {
             updates: vec![
                 ActuatorOverride {
-                    name: MIST.to_string(),
+                    actuator: Actuator::Mist,
                     value: ActuatorValue::Bool(true),
                     duration_secs: 5,
                 },
                 ActuatorOverride {
-                    name: FANS.to_string(),
+                    actuator: Actuator::Fans,
                     value: ActuatorValue::Bool(true),
                     duration_secs: 10,
                 },
                 ActuatorOverride {
-                    name: LIGHTS.to_string(),
+                    actuator: Actuator::Lights,
                     value: ActuatorValue::Float(0.7),
                     duration_secs: 15,
                 },
@@ -390,7 +366,7 @@ mod controller {
         );
         let ud = ActuatorOverrideSet {
             updates: vec![ActuatorOverride {
-                name: MIST.to_string(),
+                actuator: Actuator::Mist,
                 value: ActuatorValue::Float(1000.0),
                 duration_secs: 100,
             }],
@@ -453,12 +429,12 @@ mod json_format {
         let data = ActuatorOverrideSet {
             updates: vec![
                 ActuatorOverride {
-                    name: MIST.to_string(),
+                    actuator: Actuator::Mist,
                     value: ActuatorValue::Bool(true),
                     duration_secs: 10,
                 },
                 ActuatorOverride {
-                    name: LIGHTS.to_string(),
+                    actuator: Actuator::Lights,
                     value: ActuatorValue::Float(0.5),
                     duration_secs: 15,
                 },
@@ -467,7 +443,7 @@ mod json_format {
 
         assert_eq!(
             serde_json::to_string(&data).unwrap(),
-            "{\"updates\":[{\"name\":\"mist\",\"value\":true,\"duration_secs\":10},{\"name\":\"lights\",\"value\":0.5,\"duration_secs\":15}]}".to_string()
+            "{\"updates\":[{\"actuator\":\"mist\",\"value\":true,\"duration_secs\":10},{\"actuator\":\"lights\",\"value\":0.5,\"duration_secs\":15}]}".to_string()
         );
     }
 }

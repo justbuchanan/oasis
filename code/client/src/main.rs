@@ -18,7 +18,7 @@ use std::time::Duration;
 use terralib::config::TerrariumConfigUpdate;
 use terralib::terrarium::print_terrarium_state;
 use terralib::types::{
-    ActuatorOverride, ActuatorOverrideSet, ActuatorValue, FANS, LIGHTS, MIST, TerrariumState,
+    Actuator, ActuatorOverride, ActuatorOverrideSet, ActuatorValue, TerrariumState,
 };
 
 #[derive(Parser, Debug)]
@@ -242,13 +242,13 @@ fn create_update_data(cmds: &[ControlCommand]) -> ActuatorOverrideSet {
     let updates = cmds
         .iter()
         .map(|cmd| {
-            let val = if cmd.actuator_name == MIST || cmd.actuator_name == FANS {
+            let val = if cmd.actuator == Actuator::Mist || cmd.actuator == Actuator::Fans {
                 ActuatorValue::Bool(cmd.value > 0.0)
             } else {
                 ActuatorValue::Float(cmd.value)
             };
             ActuatorOverride {
-                name: cmd.actuator_name.clone(),
+                actuator: cmd.actuator,
                 value: val,
                 duration_secs: cmd.duration as u32,
             }
@@ -260,7 +260,7 @@ fn create_update_data(cmds: &[ControlCommand]) -> ActuatorOverrideSet {
 
 #[derive(PartialEq, Debug)]
 struct ControlCommand {
-    actuator_name: String,
+    actuator: Actuator,
     value: f32,    // TODO: or bool
     duration: f32, // in seconds
 }
@@ -291,7 +291,11 @@ fn parse_cmd(cmd: &str) -> Result<ControlCommand, CommandParseError> {
         return Err(CommandParseError::new("Empty command"));
     }
 
-    let abbrev_map = HashMap::from([("m", MIST), ("l", LIGHTS), ("f", FANS)]);
+    let abbrev_map = HashMap::from([
+        ("m", Actuator::Mist),
+        ("l", Actuator::Lights),
+        ("f", Actuator::Fans),
+    ]);
 
     let re = Regex::new(
         r"^(?<abbrev>[a-zA-Z])(@(?<value>[0-9]*(\.[0-9]+)?))?(:(?<duration>[0-9]*(\.[0-9]+)?))?$",
@@ -305,8 +309,8 @@ fn parse_cmd(cmd: &str) -> Result<ControlCommand, CommandParseError> {
     };
 
     let abbrev = caps.name("abbrev").unwrap().as_str();
-    let actuator_name = match abbrev_map.get(abbrev.to_lowercase().as_str()) {
-        Some(aname) => aname.to_string(),
+    let actuator = match abbrev_map.get(abbrev.to_lowercase().as_str()) {
+        Some(actuator) => *actuator,
         None => {
             return Err(CommandParseError::new(&format!(
                 "Invalid abbreviation: '{abbrev}'"
@@ -333,7 +337,7 @@ fn parse_cmd(cmd: &str) -> Result<ControlCommand, CommandParseError> {
     };
 
     Ok(ControlCommand {
-        actuator_name,
+        actuator,
         value,
         duration,
     })
@@ -348,7 +352,7 @@ mod parse_cmd {
         assert_eq!(
             parse_cmd("m@1:2"),
             Ok(ControlCommand {
-                actuator_name: MIST.to_string(),
+                actuator: Actuator::Mist,
                 value: 1.0,
                 duration: 2.0,
             })
@@ -360,7 +364,7 @@ mod parse_cmd {
         assert_eq!(
             parse_cmd("m:2"),
             Ok(ControlCommand {
-                actuator_name: MIST.to_string(),
+                actuator: Actuator::Mist,
                 value: 0.0,
                 duration: 2.0,
             })
@@ -372,7 +376,7 @@ mod parse_cmd {
         assert_eq!(
             parse_cmd("m@1"),
             Ok(ControlCommand {
-                actuator_name: MIST.to_string(),
+                actuator: Actuator::Mist,
                 value: 1.0,
                 duration: DEFAULT_DURATION,
             })
@@ -384,7 +388,7 @@ mod parse_cmd {
         assert_eq!(
             parse_cmd("M:2"),
             Ok(ControlCommand {
-                actuator_name: MIST.to_string(),
+                actuator: Actuator::Mist,
                 value: 1.0,
                 duration: 2.0,
             })
@@ -396,7 +400,7 @@ mod parse_cmd {
         assert_eq!(
             parse_cmd("l@0.5:0.5"),
             Ok(ControlCommand {
-                actuator_name: LIGHTS.to_string(),
+                actuator: Actuator::Lights,
                 value: 0.5,
                 duration: 0.5,
             })
@@ -428,12 +432,12 @@ mod update_data {
     fn create() {
         let cmds = vec![
             ControlCommand {
-                actuator_name: MIST.to_string(),
+                actuator: Actuator::Mist,
                 value: 1.0,
                 duration: 10.0,
             },
             ControlCommand {
-                actuator_name: LIGHTS.to_string(),
+                actuator: Actuator::Lights,
                 value: 0.5,
                 duration: 10.0,
             },
@@ -444,12 +448,12 @@ mod update_data {
             ActuatorOverrideSet {
                 updates: vec![
                     ActuatorOverride {
-                        name: MIST.to_string(),
+                        actuator: Actuator::Mist,
                         value: ActuatorValue::Bool(true),
                         duration_secs: 10,
                     },
                     ActuatorOverride {
-                        name: LIGHTS.to_string(),
+                        actuator: Actuator::Lights,
                         value: ActuatorValue::Float(0.5),
                         duration_secs: 10,
                     }
@@ -459,7 +463,7 @@ mod update_data {
 
         assert_eq!(
             serde_json::to_string(&update_data).unwrap(),
-            "{\"updates\":[{\"name\":\"mist\",\"value\":true,\"duration_secs\":10},{\"name\":\"lights\",\"value\":0.5,\"duration_secs\":10}]}".to_string()
+            "{\"updates\":[{\"actuator\":\"mist\",\"value\":true,\"duration_secs\":10},{\"actuator\":\"lights\",\"value\":0.5,\"duration_secs\":10}]}".to_string()
         );
     }
 }

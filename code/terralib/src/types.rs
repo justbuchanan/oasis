@@ -1,9 +1,13 @@
 use serde;
 use serde::{Deserialize, Serialize};
 
-pub const FANS: &str = "fans";
-pub const MIST: &str = "mist";
-pub const LIGHTS: &str = "lights";
+#[derive(Serialize, Deserialize, PartialEq, Eq, Hash, Debug, Copy, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum Actuator {
+    Lights,
+    Fans,
+    Mist,
+}
 
 #[derive(Clone, Copy, Serialize, Deserialize, Default)]
 pub struct SensorValues {
@@ -39,7 +43,7 @@ pub enum ActuatorValue {
 // lights to 0.75 for 60 seconds".
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct ActuatorOverride {
-    pub name: String,
+    pub actuator: Actuator,
     pub value: ActuatorValue,
     pub duration_secs: u32,
 }
