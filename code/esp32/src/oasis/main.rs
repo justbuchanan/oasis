@@ -21,6 +21,7 @@ use esp_idf_svc::{eventloop::EspSystemEventLoop, nvs::EspDefaultNvsPartition};
 use rand::Rng;
 use std::fs::File;
 use std::sync::{Arc, Mutex};
+use std::time::Instant;
 use terralib::cancel_context::CancelContext;
 use terralib::config::{TerrariumConfig, TerrariumConfigUpdate, Update, WifiDetails};
 use terralib::controller::{TerrariumController, terrarium_controller_main_loop};
@@ -408,22 +409,68 @@ async fn reset_button_watcher(
     }
 }
 
+// Sends new wifi details to a channel, which get picked up by the wifi
+// management task. This function exists because `await` can't be called from
+// http handlers, which aren't async.
 async fn send_wifi_details(wifi_details: Option<WifiDetails>) {
     WIFI_DETAILS_CHANNEL.send(wifi_details).await;
+}
+
+// If the given wifi_details is Some, connect to the specified network. If
+// network connection fails or if no network is specified, setup an access
+// point named something like "oasis-xxxx" that the user can connect to.
+async fn try_connect_wifi_with_ap_fallback(
+    wifi: &mut AsyncWifi<EspWifi<'static>>,
+    wifi_details_opt: &Option<WifiDetails>,
+) {
+    // Try to connect to network if specified
+    if let Some(wifi_details) = &wifi_details_opt {
+        log::info!("Connecting to wifi using creds from config...");
+        if let Err(connect_err) = connect_wifi(wifi, &wifi_details).await {
+            log::error!(
+                "Error connecting to wifi network '{}': {}",
+                wifi_details.ssid,
+                connect_err
+            );
+        } else {
+            // Success! We're on the network.
+            log::info!("Connected to wifi network '{}'", wifi_details.ssid);
+            match wifi.wifi().sta_netif().get_ip_info() {
+                Ok(ip_info) => {
+                    log::info!("Terrarium is live at ip address: {}", ip_info.ip)
+                }
+                Err(err) => log::error!("Error getting ip address: {}", err),
+            }
+            return;
+        }
+    }
+
+    // If no network was specified or we failed to connect,
+    // setup/broadcast our own access point.
+    log::error!("Setting up access point...");
+    if let Err(err) = setup_wifi_ap(wifi).await {
+        log::error!("Error setting up access point: {}", err);
+        // TODO: what do we do here? setting up an access point shouldn't fail -
+        // it doesn't have any dependencies external to the device. do we
+        // reboot? what if we get stuck in a reboot loop?
+    } else {
+        log::info!("Access point setup");
+    }
 }
 
 // Subscribe to a channel that passes WifiDetails on each change. Setup an
 // access point or network connection based on them. If connect fails, setup an
 // access point, then periodically retry the connection to the specified
-// network in case it comes back online or something.
+// network in case it comes back online.
 #[embassy_executor::task]
 async fn wifi_management_task(wifi: Arc<Mutex<AsyncWifi<EspWifi<'static>>>>) {
-    // TODO: if connect fails, setup an access point for now, then retry connection again after waiting a bit.
+    let mut latest_wifi_setup_time = Instant::now();
+    let mut latest_wifi_details: Option<WifiDetails> = None;
 
     loop {
         match select::select(
             WIFI_DETAILS_CHANNEL.receive(),
-            Timer::after(Duration::from_secs(120)),
+            Timer::after(Duration::from_secs(61)),
         )
         .await
         {
@@ -432,6 +479,7 @@ async fn wifi_management_task(wifi: Arc<Mutex<AsyncWifi<EspWifi<'static>>>>) {
                     "wifi_management_task got new wifi details: {:?}",
                     wifi_details_opt
                 );
+                latest_wifi_details = wifi_details_opt;
 
                 // WifiDetails typically come in on the channel from an http
                 // handler. If we immediately reconfigure wifi, the http
@@ -440,67 +488,55 @@ async fn wifi_management_task(wifi: Arc<Mutex<AsyncWifi<EspWifi<'static>>>>) {
                 // wifi.
                 Timer::after(Duration::from_millis(10)).await;
 
-                // TODO: what if wifi details is Some(), but contains empty strings?
-
                 let mut wifi = wifi.lock().unwrap();
-                if let Some(wifi_details) = wifi_details_opt {
-                    log::info!("Connecting to wifi using creds from config...");
-                    if let Err(connect_err) = connect_wifi(&mut wifi, &wifi_details).await {
-                        log::error!(
-                            "Error connecting to wifi network '{}': {}",
-                            wifi_details.ssid,
-                            connect_err
-                        );
-
-                        // Fallback to AP mode because connect failed
-                        log::error!("Setting up access point...");
-                        if let Err(err) = setup_wifi_ap(&mut wifi).await {
-                            // TODO: ?
-                            log::error!("Error setting up access point: {}", err);
-                        } else {
-                            log::info!("Access point setup");
-                        }
-                    } else {
-                        // connect_wifi succeeded
-                        log::info!("Connected to wifi network '{}'", wifi_details.ssid);
-                        match wifi.wifi().sta_netif().get_ip_info() {
-                            Ok(ip_info) => {
-                                log::info!("Terrarium is live at ip address: {}", ip_info.ip)
-                            }
-                            Err(err) => log::error!("Error getting ip address: {}", err),
-                        }
-                    }
-                } else {
-                    log::error!("No wifi details in config. Setting up access point...");
-                    if let Err(err) = setup_wifi_ap(&mut wifi).await {
-                        log::error!("Error setting up access point: {}", err);
-                    } else {
-                        log::info!("Access point setup");
-                    }
-                }
+                try_connect_wifi_with_ap_fallback(&mut wifi, &latest_wifi_details).await;
+                latest_wifi_setup_time = Instant::now();
             }
             select::Either::Second(_) => {
-                // print a wifi status update
-                let wifi = wifi.lock().unwrap();
-                match wifi.wifi().sta_netif().get_ip_info() {
-                    Ok(ip_info) => {
-                        log::info!("Terrarium is live at ip address: {}", ip_info.ip)
-                    }
-                    Err(err) => log::error!("Error getting ip address: {}", err),
-                }
-                match wifi.is_connected() {
-                    Ok(is_connected) => {
-                        log::info!("wifi.is_connected() -> {}", is_connected);
-                    }
-                    Err(err) => log::error!("Error calling wifi.is_connected(): {}", err),
-                }
+                if latest_wifi_details.is_some() {
+                    let mut wifi = wifi.lock().unwrap();
+                    // "ap mode" means the terrarium is hosting/broadcasting
+                    //  it's own wifi network. It does this temporarily if we
+                    //  have credentials to connect to another network, but we
+                    //  failed to connect.
+                    let in_temporary_ap_mode = match wifi.wifi().driver().is_ap_started() {
+                        Ok(is_ap_started) => is_ap_started,
+                        Err(err) => {
+                            log::error!("Error querying wifi mode: {}", err);
+                            false
+                        }
+                    };
+                    if in_temporary_ap_mode {
+                        let timeout_elapsed = (Instant::now() - latest_wifi_setup_time)
+                            > std::time::Duration::from_secs(5 * 60);
+                        if timeout_elapsed {
+                            try_connect_wifi_with_ap_fallback(&mut wifi, &latest_wifi_details)
+                                .await;
+                            latest_wifi_setup_time = Instant::now();
+                        }
+                    } else {
+                        let wifi_still_connected = match wifi.is_connected() {
+                            Ok(is_connected) => is_connected,
+                            Err(err) => {
+                                log::error!("Error getting wifi connection status: {}", err);
+                                false
+                            }
+                        };
 
-                // TODO: test network connection
+                        if !wifi_still_connected {
+                            // wifi connection got dropped, try again
+                            try_connect_wifi_with_ap_fallback(&mut wifi, &latest_wifi_details)
+                                .await;
+                            latest_wifi_setup_time = Instant::now();
+                        }
+                    }
+                }
             }
         };
     }
 }
 
+// Create our own wifi network named "oasis-xxxx" (where xxxx is a random 4-digit number)
 async fn setup_wifi_ap(wifi: &mut AsyncWifi<EspWifi<'static>>) -> anyhow::Result<()> {
     if wifi.is_started()? {
         log::error!("Stopping wifi...");
@@ -528,6 +564,7 @@ async fn setup_wifi_ap(wifi: &mut AsyncWifi<EspWifi<'static>>) -> anyhow::Result
     Ok(())
 }
 
+// Connect to the wifi network
 async fn connect_wifi(
     wifi: &mut AsyncWifi<EspWifi<'static>>,
     creds: &WifiDetails,
@@ -551,7 +588,6 @@ async fn connect_wifi(
     wifi.start().await?;
     wifi.connect().await?;
     wifi.wait_netif_up().await?;
-    log::info!("Wifi netif up");
 
     Ok(())
 }
