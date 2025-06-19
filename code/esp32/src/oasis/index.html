@@ -741,15 +741,13 @@
                     if (!response.ok) {
                         const response_text = await response.text();
                         const msg = `Config update failed with status: ${response.status}, msg: ${response_text}`;
-                        console.error(msg);
-                        // TODO: show error in error box on screen?
                         throw new Error(msg);
                     }
-                    console.log("/config update succeeded");
-                    return;
+
+                    hideError();
                 } catch (error) {
                     console.error("updateConfig failed:", error);
-                    throw error;
+                    showError(error.message);
                 }
             }
 
@@ -811,8 +809,7 @@
                 cfg_update.name = hostname == "" ? null : hostname;
                 cfg_update.wifi =
                     ssid == "" ? null : { ssid: ssid, password: password };
-                // TODO: error handling
-                await updateConfig(cfg_update);
+                updateConfig(cfg_update);
 
                 alert(
                     "Wifi information updated. The terrarium will reboot and use the newly-configured network. Wait a few moments, connect to the network, then browse to http://" +
@@ -869,7 +866,7 @@
                         auto_mist_enabled: autoMistEnabledCheckbox.checked,
                     },
                 };
-                await updateConfig(cfg_update);
+                updateConfig(cfg_update);
             });
             mistMinimumHumiditySlider.addEventListener("change", async () => {
                 let cfg_update = {
@@ -878,7 +875,7 @@
                             parseFloat(mistMinimumHumiditySlider.value) / 100.0,
                     },
                 };
-                await updateConfig(cfg_update);
+                updateConfig(cfg_update);
             });
             mistMinimumHumiditySlider.addEventListener("input", async () => {
                 mistMinimumHumidityValueDisplay.textContent =
@@ -894,7 +891,7 @@
                             mist: data,
                         },
                     };
-                    await updateConfig(cfg_update);
+                    updateConfig(cfg_update);
                 },
             );
             fanScheduleList.addEventListener(
@@ -906,7 +903,7 @@
                             fans: data,
                         },
                     };
-                    await updateConfig(cfg_update);
+                    updateConfig(cfg_update);
                 },
             );
 
@@ -1102,7 +1099,7 @@
                         },
                     },
                 };
-                await updateConfig(cfg_update);
+                updateConfig(cfg_update);
             }
 
             /**
