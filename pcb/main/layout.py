@@ -1,5 +1,3 @@
-# TODO: this file is likely obsolete - delete if we don't need it anymore
-
 # script to generate layout.yaml, which is used by a kicad plugin to set component positions, etc.
 # plugin: https://github.com/mcbridejc/kicad_component_layout
 #
@@ -38,12 +36,6 @@ components = {}
 ARC_ORIGIN = [25, 100]
 ARC_R = 92
 
-# - offset: 57
-# - arc_r: 92
-# - side_len: 29.06828684248339
-# - w: 65
-
-
 # angle is in radians
 def pos_at_angle_and_radius(angle, radius):
     x = round(radius * math.cos(angle), 3)
@@ -58,9 +50,6 @@ components["J2"] = {
     "location": j2pos[0:2],
     "rotation": j2pos[2],
 }
-
-# rear_segment_x = 82.03
-# hole_pos = (85, 100)
 
 layout = {
     "origin": ARC_ORIGIN,
