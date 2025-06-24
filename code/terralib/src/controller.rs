@@ -269,15 +269,16 @@ impl TerrariumController {
     }
 }
 
-// Spins until the mutex can be acquired. If Mutex.lock() is used directly in async code, we get deadlocks.
-// TODO: there has to be a better way to do this.
-// TODO: de-dupe with the one in main.rs
-async fn lock_mutex<T>(mutex: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
+// spins until it can get the mutex. If Mutex.lock() is used directly in async code, we can (and do) get deadlocks.
+// TODO: there has to be a better way to do this. Look into NoopRawMutex from embassy.
+pub async fn spin_lock_mutex<T: ?Sized>(
+    mutex: &std::sync::Mutex<T>,
+) -> std::sync::MutexGuard<'_, T> {
     loop {
-        Timer::after(embassy_time::Duration::from_millis(5)).await;
         if let Ok(m) = mutex.try_lock() {
             return m;
         }
+        Timer::after(embassy_time::Duration::from_millis(5)).await;
     }
 }
 
@@ -286,7 +287,7 @@ pub async fn terrarium_controller_main_loop(controller: Arc<Mutex<TerrariumContr
     loop {
         Timer::after(embassy_time::Duration::from_millis(1)).await;
 
-        if let Err(err) = lock_mutex(&*controller).await.run() {
+        if let Err(err) = spin_lock_mutex(&*controller).await.run() {
             log::error!("Terrarium run() errored with: {err}");
         }
     }

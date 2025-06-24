@@ -37,7 +37,6 @@ pub struct RealTerrarium<'a> {
     led_channel: LedcDriver<'a>,
     // note: when using ledc fade features, get_duty() doesn't return the right thing, so we record it here.
     led_target: f32,
-    // TODO: can we not specify the pin number here?
     fan_output: PinDriver<'a, gpio::Gpio3, gpio::Output>,
     sht30: Sht3x<I2cDriver<'a>>,
     // esp32 on-board temperature sensor.

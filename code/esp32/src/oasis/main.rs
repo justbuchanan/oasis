@@ -24,7 +24,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use terralib::cancel_context::CancelContext;
 use terralib::config::{TerrariumConfig, TerrariumConfigUpdate, Update, WifiDetails};
-use terralib::controller::{TerrariumController, terrarium_controller_main_loop};
+use terralib::controller::{TerrariumController, spin_lock_mutex, terrarium_controller_main_loop};
 use terralib::influxdb;
 use terralib::terrarium::{get_terrarium_state, print_terrarium_info};
 use terralib::types::{ActuatorOverrideSet, SensorValues, TerrariumState};
@@ -290,7 +290,13 @@ async fn main(spawner: Spawner) {
         })
         .expect("Http handler registration should succeed");
 
-    print_terrarium_info(&mut *lock_mutex(&*controller).await.terrarium().lock().unwrap());
+    print_terrarium_info(
+        &mut *spin_lock_mutex(&*controller)
+            .await
+            .terrarium()
+            .lock()
+            .unwrap(),
+    );
 
     // lightning test
     if false {
@@ -302,7 +308,7 @@ async fn main(spawner: Spawner) {
             .unwrap()
             .set_lights(1.0);
         spawner.must_spawn(effects::lightning(
-            lock_mutex(&*controller).await.terrarium(),
+            spin_lock_mutex(&*controller).await.terrarium(),
         ));
     }
 
@@ -324,17 +330,6 @@ async fn main(spawner: Spawner) {
     }
 }
 
-// spins until it can get the mutex. If Mutex.lock() is used directly in async code, we frequently get deadlocks.
-// TODO: there has to be a better way to do this. Look into NoopRawMutex from embassy.
-async fn lock_mutex<T>(mutex: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
-    loop {
-        Timer::after(Duration::from_millis(5)).await;
-        if let Ok(m) = mutex.try_lock() {
-            return m;
-        }
-    }
-}
-
 #[embassy_executor::task]
 async fn reset_button_watcher(
     pin: gpio::Gpio9,
@@ -352,10 +347,10 @@ async fn reset_button_watcher(
         println!("Reset button pressed!");
 
         // Start breathing leds to indicate that the reset button press was/is registered.
-        lock_mutex(&*controller).await.takeover_lights();
+        spin_lock_mutex(&*controller).await.takeover_lights();
         let breathe_ctx = Arc::new(CancelContext::new());
         spawner.must_spawn(effects::breathe(
-            lock_mutex(&*controller).await.terrarium(),
+            spin_lock_mutex(&*controller).await.terrarium(),
             0.05,
             0.5,
             1_000,
@@ -374,7 +369,7 @@ async fn reset_button_watcher(
                 // button was released early, don't reset
                 // cancel breathe effect
                 breathe_ctx.cancel_and_wait().await;
-                lock_mutex(&*controller).await.release_lights();
+                spin_lock_mutex(&*controller).await.release_lights();
                 log::info!("Rst button was released early, not resetting");
             }
             select::Either::Second(_) => {
@@ -382,14 +377,14 @@ async fn reset_button_watcher(
 
                 // cancel breathe effect
                 breathe_ctx.cancel_and_wait().await;
-                lock_mutex(&*controller).await.release_lights();
+                spin_lock_mutex(&*controller).await.release_lights();
                 log::info!("Rst button was held down for 10s, resetting...");
 
                 // do a second "breathe" effect, but blink much faster to
                 // indicate that reset was registered.
                 let breathe_ctx2 = Arc::new(CancelContext::new());
                 spawner.must_spawn(effects::breathe(
-                    lock_mutex(&*controller).await.terrarium(),
+                    spin_lock_mutex(&*controller).await.terrarium(),
                     0.05,
                     0.5,
                     100,
@@ -704,23 +699,20 @@ fn record_to_influxdb(
     Ok(())
 }
 
+// Records the terrarium's state to influx db every 10 seconds.
 #[embassy_executor::task]
 async fn record_to_influxdb_forever(controller: Arc<Mutex<TerrariumController>>) {
-    // TODO: accept a channel for influxdb creds?
-    // TODO: accept a channel for state updates?
     loop {
-        // record ~every 10 seconds
         Timer::after(Duration::from_secs(10)).await;
-        let ctlr = lock_mutex(&*controller).await;
+        let ctlr = spin_lock_mutex(&*controller).await;
         if let Some(config) = &ctlr.config().influxdb {
             let mut client =
                 HttpClient::wrap(EspHttpConnection::new(&Default::default()).expect("default"));
-            // TODO: use lock_mutex when accessing the terrarium() below
-            if let Err(err) = record_to_influxdb(
-                &mut client,
-                config,
-                &get_terrarium_state(&mut *ctlr.terrarium().lock().unwrap()),
-            ) {
+            let locked_terrarium = &*ctlr.terrarium();
+            let mut terrarium = spin_lock_mutex(locked_terrarium).await;
+            if let Err(err) =
+                record_to_influxdb(&mut client, config, &get_terrarium_state(&mut *terrarium))
+            {
                 log::error!("Error recording to influxdb: {err}");
             }
         }
