@@ -153,6 +153,8 @@ The sht30 sensor board comes without a cable. You'll need to solder a standard 4
 
 ## PCB Order History
 
+Below are all three circuit board orders I've placed for this project (as of June 2025). All boards were ordered from JLCPCB and include varying levels of assembly (components sourced and soldered by JLCPCB).
+
 ### v0.1 all-in-one board - Feb 11, 2025
 
 Single-board design - esp32, leds, sht30 temp/humid sensor, and everything else all on one board.
@@ -175,11 +177,13 @@ note: this price info is what I was charged by JLC, it does not include the comp
     - shipping: $38
     - sales tax: $13
 
+This order was for five boards, so price/board was $28 + ~$17 = ~$45.
+
 ### v0.2 ledboard - March 16, 2025
 
-Based on the poor thermal performance of the all-in-one boards, I decided to do a major redesign and put the leds on their own board, made out of solid aluminum. The electronics are on their own board.
+Based on the poor thermal performance of the all-in-one boards, I decided to do a major redesign and put the leds on their own board, made out of solid aluminum. The rest of the electronics are on their own board.
 
-This order is for 5x 1.6mm thick boards for the leds. Price/board = $6.84. This price doesn't include the 5 Cree XT-E LEDs or the connector cable soldered on.
+This order is for 5x 1.6mm thick aluminum boards for the leds. Price/board = $6.84. This price doesn't include the 5 Cree XT-E LEDs or the connector cable soldered on.
 
 Files: https://github.com/justbuchanan/oasis/tree/main/pcb/fabricated-boards/ledboard-v0.3
 
