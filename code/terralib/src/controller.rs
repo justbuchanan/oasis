@@ -5,6 +5,7 @@ use anyhow::anyhow;
 use embassy_time::Timer;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 // Max amount of time that a control override can specify is 30 minutes.
 const MAX_OVERRIDE_DURATION_SECS: u32 = 30 * 60;
@@ -13,7 +14,8 @@ const DEFAULT_TIMEZONE: &'static str = "America/Los_Angeles";
 
 struct ActuatorOverride {
     value: ActuatorValue,
-    expiration: jiff::civil::Time,
+    start: Instant,
+    duration: Duration,
 }
 
 // The TerrariumController manages the terrarium hardware and its configuration
@@ -137,11 +139,13 @@ impl TerrariumController {
             }
         }
 
+        let instant_now = Instant::now();
+
         // Apply overrides / temporary controls.
         // If an override is expired, remove it. Otherwise, use its value to
         // override whatever is configured in the schedule.
         if let Some(lights_override) = self.active_overrides.get(&Actuator::Lights) {
-            if lights_override.expiration < t {
+            if instant_now - lights_override.start > lights_override.duration {
                 self.active_overrides.remove(&Actuator::Lights);
             } else if let ActuatorValue::Float(l) = lights_override.value {
                 act_val.lights = l;
@@ -150,7 +154,7 @@ impl TerrariumController {
             }
         }
         if let Some(mist_override) = self.active_overrides.get(&Actuator::Mist) {
-            if mist_override.expiration < t {
+            if instant_now - mist_override.start > mist_override.duration {
                 self.active_overrides.remove(&Actuator::Mist);
             } else if let ActuatorValue::Bool(m) = mist_override.value {
                 act_val.mist = m;
@@ -159,7 +163,7 @@ impl TerrariumController {
             }
         }
         if let Some(fan_override) = self.active_overrides.get(&Actuator::Fans) {
-            if fan_override.expiration < t {
+            if instant_now - fan_override.start > fan_override.duration {
                 self.active_overrides.remove(&Actuator::Fans);
             } else if let ActuatorValue::Bool(f) = fan_override.value {
                 act_val.fans = f;
@@ -187,8 +191,6 @@ impl TerrariumController {
             return Err(anyhow!("Empty control request"));
         }
 
-        let now = self.get_local_time();
-
         for ud in &update_data.updates {
             match ud.actuator {
                 Actuator::Mist => match ud.value {
@@ -198,8 +200,8 @@ impl TerrariumController {
                             Actuator::Mist,
                             ActuatorOverride {
                                 value: ud.value,
-                                expiration: now
-                                    .wrapping_add(std::time::Duration::from_secs(duration as u64)),
+                                duration: Duration::from_secs(duration as u64),
+                                start: Instant::now(),
                             },
                         );
                     }
@@ -218,8 +220,8 @@ impl TerrariumController {
                             Actuator::Lights,
                             ActuatorOverride {
                                 value: ud.value,
-                                expiration: now
-                                    .wrapping_add(std::time::Duration::from_secs(duration as u64)),
+                                duration: Duration::from_secs(duration as u64),
+                                start: Instant::now(),
                             },
                         );
                     }
@@ -232,8 +234,8 @@ impl TerrariumController {
                             Actuator::Fans,
                             ActuatorOverride {
                                 value: ud.value,
-                                expiration: now
-                                    .wrapping_add(std::time::Duration::from_secs(duration as u64)),
+                                duration: Duration::from_secs(duration as u64),
+                                start: Instant::now(),
                             },
                         );
                     }
