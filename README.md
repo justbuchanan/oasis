@@ -13,6 +13,7 @@ Oasis is a fully open-source, mostly 3d-printed smart terrarium. It provides the
 - fans for airflow
 - a temperature/humidity sensor for monitoring environment conditions
 - wifi connectivity to allow control and configuration from your phone or computer (see [web interface](https://oasis-terrarium.com/docs/usage_guide/#web-interface))
+- outer dimensions: ~8" diameter and ~13" tall
 
 See the website for pictures, build details and more: https://oasis-terrarium.com.
 
