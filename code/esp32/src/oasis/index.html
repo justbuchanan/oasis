@@ -331,6 +331,24 @@
     <body>
         <h1>Oasis Terrarium</h1>
 
+        <h2>Status</h2>
+        <div class="card">
+            <div class="sensors-grid">
+                <div class="sensor-item">
+                    <div class="sensor-label">Temperature</div>
+                    <div class="sensor-value" id="temp">?</div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-label">Humidity</div>
+                    <div class="sensor-value" id="humid">?</div>
+                </div>
+            </div>
+            <div class="status">
+                Last updated: <span id="last-updated">?</span>
+            </div>
+            <div id="error-message" class="error-message"></div>
+        </div>
+
         <h2>Temporary Controls</h2>
         <div class="card">
             <div class="control-item">
@@ -359,27 +377,9 @@
                 <input type="checkbox" id="fans" name="fans" disabled />
             </div>
             <p class="card-footnote">
-                Note: the above controls take effect for 30 seconds, then the
+                The above controls take effect for 30 seconds, then the
                 terrarium reverts to its schedule.
             </p>
-        </div>
-
-        <h2>Status</h2>
-        <div class="card">
-            <div class="sensors-grid">
-                <div class="sensor-item">
-                    <div class="sensor-label">Temperature</div>
-                    <div class="sensor-value" id="temp">?</div>
-                </div>
-                <div class="sensor-item">
-                    <div class="sensor-label">Humidity</div>
-                    <div class="sensor-value" id="humid">?</div>
-                </div>
-            </div>
-            <div class="status">
-                Last updated: <span id="last-updated">?</span>
-            </div>
-            <div id="error-message" class="error-message"></div>
         </div>
 
         <h2>Schedule</h2>
@@ -411,9 +411,11 @@
             <h3>Mist</h3>
             <hr />
 
-            <h4>Auto Mist</h4>
-            <div id="auto-mist-container">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <h4>Auto Mist</h4>
                 <input type="checkbox" id="auto-mist-enabled" disabled />
+            </div>
+            <div id="auto-mist-container">
                 <label for="mist-minimum-humidity" disabled
                     >Minimum Humidity:</label
                 >
