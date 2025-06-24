@@ -124,19 +124,24 @@ async fn main(spawner: Spawner) {
     )));
 
     // Initialize mdns service to broadcast the terrarium's hostname on the network.
-    let mut md = mdns::EspMdns::take().expect("EspMdns service should initialize");
-    md.set_hostname(hostname.as_str())
-        .expect("Setting mdns hostname should succeed");
-    md.add_service(
-        /*instance_name*/ None,
-        /*service_type*/
-        "_oasis_terrarium",
-        /*proto*/
-        "_tcp",
-        /*port*/ 80,
-        /*txt*/ &[],
-    )
-    .expect("mdns service registration should succeed");
+    let mdns = Arc::new(Mutex::new(
+        mdns::EspMdns::take().expect("EspMdns service should initialize"),
+    ));
+    {
+        let mut mdns = mdns.lock().unwrap();
+        mdns.set_hostname(hostname.as_str())
+            .expect("Setting mdns hostname should succeed");
+        mdns.add_service(
+            /*instance_name*/ None,
+            /*service_type*/
+            "_oasis_terrarium",
+            /*proto*/
+            "_tcp",
+            /*port*/ 80,
+            /*txt*/ &[],
+        )
+        .expect("mdns service registration should succeed");
+    }
     log::info!("Setup mdns broadcast for '{}'", hostname);
 
     // Initialize SNTP service to determine current time from the ntp servers on
@@ -266,8 +271,8 @@ async fn main(spawner: Spawner) {
             // See if hostname or wifi creds changed
             // TODO: compare values of update.wifi and old config.wifi. It might
             // be a Set, but with the same value as before.
-            let needs_wifi_reset =
-                cfg_update.wifi != Update::NoChange || cfg_update.name != Update::NoChange;
+            let needs_wifi_reset = cfg_update.wifi != Update::NoChange;
+            let needs_hostname_change = cfg_update.name != Update::NoChange;
 
             if let Err(err) = ctlref4.lock().unwrap().update_config(&cfg_update) {
                 log::error!("Error updating config: {}", err);
@@ -284,6 +289,20 @@ async fn main(spawner: Spawner) {
                 block_on(send_wifi_details(
                     ctlref4.lock().unwrap().config().wifi.clone(),
                 ));
+            }
+            if needs_hostname_change {
+                let hostname = ctlref4
+                    .lock()
+                    .unwrap()
+                    .config()
+                    .name
+                    .clone()
+                    .unwrap_or("oasis".to_string());
+                mdns.lock()
+                    .unwrap()
+                    .set_hostname(&hostname)
+                    .expect("Setting mdns hostname should succeed");
+                log::info!("Successfully updated mdns hostname to '{}'", hostname)
             }
 
             Ok(())
