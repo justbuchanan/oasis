@@ -8,11 +8,11 @@ https://oasis-terrarium.com
 
 Oasis is a fully open-source, mostly 3d-printed smart terrarium. It provides the ideal environment for humidity-loving plants like mosses, ferns, orchids, and many others. The design includes:
 
-- [high power LED lighting](/docs/random_notes/#light-intensity)
+- [high power LED lighting](https://oasis-terrarium.com/docs/random_notes/#light-intensity)
 - a mister for providing plants with water and maintaining high humidity
 - fans for airflow
 - a temperature/humidity sensor for monitoring environment conditions
-- wifi connectivity to allow control and configuration from your phone or computer (see [web interface](/docs/usage_guide/#web-interface))
+- wifi connectivity to allow control and configuration from your phone or computer (see [web interface](https://oasis-terrarium.com/docs/usage_guide/#web-interface))
 
 See the website for pictures, build details and more: https://oasis-terrarium.com.
 
