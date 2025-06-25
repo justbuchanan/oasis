@@ -71,23 +71,34 @@ impl Schedule {
     // never changes it, their plants will do ok.
     pub fn new_with_reasonable_defaults() -> Self {
         Self {
+            // Lights on from 10am to 10pm.
             lights: Some(TimeRange {
                 start: "10:00".parse().unwrap(),
                 stop: "22:00".parse().unwrap(),
             }),
             light_intensity: Some(0.7),
+            // Mist on for 60 seconds at 11am and again at 4pm.
+            mist: vec![
+                ScheduledEvent {
+                    start_time: "11:00".parse().unwrap(),
+                    duration_secs: 60,
+                    repeat: None,
+                },
+                ScheduledEvent {
+                    start_time: "16:00".parse().unwrap(),
+                    duration_secs: 60,
+                    repeat: None,
+                },
+            ],
+            // Fans on for 2 minutes every hour during daylight hours. The fans
+            // are intentionally set to come on while mist is *not* on.
             fans: vec![ScheduledEvent {
                 start_time: "10:30".parse().unwrap(),
-                duration_secs: 10 * 60,
+                duration_secs: 2 * 60,
                 repeat: Some(RepeatInfo {
                     n_hours: 1,
                     stop_time: "22:00".parse().unwrap(),
                 }),
-            }],
-            mist: vec![ScheduledEvent {
-                start_time: "10:01".parse().unwrap(),
-                duration_secs: 30,
-                repeat: None,
             }],
             auto_mist_enabled: false,
             humidity_setpoint: None,
