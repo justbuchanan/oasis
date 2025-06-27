@@ -207,18 +207,18 @@ Files: https://github.com/justbuchanan/oasis/tree/main/pcb/fabricated-boards/mai
 
 ## PCB Ordering Guide
 
-There are a lot of options for custom PCB manufacturing. I chose to go with JLCPCB due to low cost, support for board assembly, and extensive component catalog. PCBWay is another good option and also provides assembly services. OSH Park is a good choice for US-based manufacturing, but they don't offer assembly services.
+There are a lot of options for custom PCB manufacturing. I chose to go with JLCPCB due to low cost, support for board assembly, and extensive component catalog. PCBWay is another good option that also provides assembly services. OSH Park is a good choice for US-based manufacturing, but they don't offer assembly services.
 
 ### PCB Production Files
 
-To order custom PCBs, you'll need the production files to send to the manufacturer. If you're ordering bare/un-assembled boards, you'll just need the [gerber files](https://en.wikipedia.org/wiki/Gerber_format) (typically bundled into a `gerbers.zip`), which are essentially vector image files that specify things like where copper traces are located on either side of the board, silkscreen text and images on either sides of the board, etc.
+To order custom PCBs, you'll need the production files to send to the manufacturer. If you're ordering bare/un-assembled boards, you'll just need the [gerber files](https://en.wikipedia.org/wiki/Gerber_format) (typically bundled into a `gerbers.zip`), which are essentially vector image files that specify things like where copper traces are located on either side of the board, silkscreen text and images on either side of the board, etc.
 
 If you're looking to order assembled boards, you'll additionally need two more files:
 
 - `bom.csv`: a bill of materials file, which maps from component ids in the board design to specific part numbers in the manufacturer's part catalog
 - `pos.csv`/`positions.csv`: file which records the location and orientation of each part
 
-All three production files are generated from the KiCad design files using the [Fabrication-Toolkit plugin](https://github.com/bennymeg/Fabrication-Toolkit). This plugin can be invoked from the KiCad user interface or from the command line. The command line invocation for the plugin is contained in this project's [makefile](https://github.com/justbuchanan/oasis/blob/fbd0d2fceae36f7a195ebd945a816dcebf819d9c/makefile#L142-L147), which you can run with `make pcb`. This will generate the production files for both boards in `build/pcb/main` and `build/pcb/ledboard`. If you make modifications to the board in KiCad, rerun `make pcb` to regenerate the files.
+All three production files are generated from the KiCad design files using the [Fabrication-Toolkit plugin](https://github.com/bennymeg/Fabrication-Toolkit). This plugin can be invoked from the KiCad user interface or from the command line. The command line invocation for the plugin is contained in this project's [makefile](https://github.com/justbuchanan/oasis/blob/fbd0d2fceae36f7a195ebd945a816dcebf819d9c/makefile#L142-L147), which you can run with `make pcb`. This will generate the production files for both boards in `build/pcb/main` and `build/pcb/ledboard`. If you make modifications to the board in the KiCad Schematic Editor, run "Tools -> Update PCB From Schematic", then rerun `make pcb` to regenerate the files.
 
 While you can check out the `main` branch of the project in git and use the KiCad files directly, it is recommended to use a tagged release which has been vetted for correctness. It's possible that as the project evolves, changes will be made to the KiCad files that haven't yet been tested.
 
