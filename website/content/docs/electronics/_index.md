@@ -205,6 +205,61 @@ Files: https://github.com/justbuchanan/oasis/tree/main/pcb/fabricated-boards/mai
     - shipping: $29
     - sales tax: $21
 
+## PCB Ordering Guide
+
+There are a lot of options for custom PCB manufacturing. I chose to go with JLCPCB due to low cost, support for board assembly, and extensive component catalog. PCBWay is another good option and also provides assembly services. OSH Park is a good choice for US-based manufacturing, but they don't offer assembly services.
+
+### PCB Production Files
+
+To order custom PCBs, you'll need the production files to send to the manufacturer. If you're ordering bare/un-assembled boards, you'll just need the [gerber files](https://en.wikipedia.org/wiki/Gerber_format) (typically bundled into a `gerbers.zip`), which are essentially vector image files that specify things like where copper traces are located on either side of the board, silkscreen text and images on either sides of the board, etc.
+
+If you're looking to order assembled boards, you'll additionally need two more files:
+
+- `bom.csv`: a bill of materials file, which maps from component ids in the board design to specific part numbers in the manufacturer's part catalog
+- `pos.csv`/`positions.csv`: file which records the location and orientation of each part
+
+All three production files are generated from the KiCad design files using the [Fabrication-Toolkit plugin](https://github.com/bennymeg/Fabrication-Toolkit). This plugin can be invoked from the KiCad user interface or from the command line. The command line invocation for the plugin is contained in this project's [makefile](https://github.com/justbuchanan/oasis/blob/fbd0d2fceae36f7a195ebd945a816dcebf819d9c/makefile#L142-L147), which you can run with `make pcb`. This will generate the production files for both boards in `build/pcb/main` and `build/pcb/ledboard`. If you make modifications to the board in KiCad, rerun `make pcb` to regenerate the files.
+
+While you can check out the `main` branch of the project in git and use the KiCad files directly, it is recommended to use a tagged release which has been vetted for correctness. It's possible that as the project evolves, changes will be made to the KiCad files that haven't yet been tested.
+
+Tagged releases can be found on the project's [Releases Page on GitHub](https://github.com/justbuchanan/oasis/releases). Alternatively, you can use the design files in the [pcb/fabricated-boards](https://github.com/justbuchanan/oasis/tree/main/pcb/fabricated-boards) directory, which is an archive of all boards ordered to-date.
+
+### Notes On Assembly and Component Selection
+
+JLCPCB has an extensive [catalog of parts](https://jlcpcb.com/parts) they stock in their warehouse(s) and many of the components selected for this project were specifically chosen based on their availability at JLCPCB. There are a couple parts in this design that JLCPCB doesn't stock (including the LED Driver and LEDs) and need to be handled separately. Furthermore, the parts inventory is constantly in flux and it's possible that certain parts that were in stock previously are not in stock when you're placing an order. There are a few options here:
+
+- Skip assembly of those parts, order them separately from somewhere like digikey, then solder them yourself at home.
+- Use JLCPCB's pre-order service, which allows you to order almost any part from another supplier. It will take a week or two for the parts to arrive at JLCPCB, after which point you can submit your board order.
+- Select a different/equivalent part from JLCPCB's catalog that they do have in stock. This will require you updating the "LCSC Part #" field of the relevant component in KiCad, then regenerating and re-uploading the `bom.csv` file.
+
+#### Overhead Costs and "Basic" vs "Extended" Parts
+
+JLCPCB uses large [pick-and-place machines](https://en.wikipedia.org/wiki/Pick-and-place_machine) for board assembly. These machines have a number of component "reels" attached to them, which hold things like resistors, capacitors, connectors, etc. For commonly-used parts, such as a 1k 0805 resistor, JLCPCB has selected a specific model of the part that they keep loaded up in each of their machines. JLCPCB calls these "Basic Parts" and charges no assembly fee for them since they're already loaded into every machine. When selecting parts, try and find a "Basic" part that fits the bill in order to save money. Any non-"Basic" (i.e. "Extended") parts that require assembly will cost you a $3 setup fee per part. If you're ordering a large number of boards, this is a small cost. If you're only ordering a few, these assembly costs add up.
+
+### JLCPCB Ordering Step-by-Step
+
+Below is a step-by-step guide to placing a board order through JLCPCB. This will focus on the main board, but the steps are largely the same for the LED board. The main differences with the LED board are that the board should be made of aluminum (to act as a heat sink) instead of the standard FR4 and that only one side of the board requires assembly.
+
+1. Go to https://jlcpcb.com and login
+1. Upload gerbers.zip
+1. (optional) select quantity - default is 5
+1. (optional) "Surface Finish": select "LeadFree HASL". Costs like $4 extra on a 5-board order, so why not skip the lead.
+1. If you're just ordering bare PCBs, you're done! Finish up the checkout process and place your order.
+1. Toggle "PCB Assembly" ON
+1. To assembly both sides of the mainboard, change "PCBA Type" from "Economic" to "Standard", then change "Assembly Side" to "Both Sides"
+1. (optional) Enable "Confirm Parts Placement" and "Confirm Production file" - it's cheap, so why not have them double-check things?
+1. (optional) Adjust assembly quantity. Default is 5, but you could for example order 5 total boards and have only 2 of them assembled.
+1. Click the "Next" button
+1. Take a quick look over the board images, then click "Next" again
+1. Upload "bom.csv" and "positions.csv", then click the "Process" button
+1. You're now presented with the bill of materials. If any of the parts say "shortfall" in the right-most column, it means JLCPCB doesn't have those parts. See [Notes on Assembly and Component Selection](#notes-on-assembly-and-component-selection) above.
+1. Click "Next" to move on to the assembly review page
+1. Click "Next" to move on to the "Quote & Order" Page.
+1. Select a "Product Description" from the dropdown. This has tax/tariff/legal implications, but probably doesn't matter much for us. I've been selecting "Other" and typing in "Terrarium for Plants".
+1. "Save to Cart" and continue on to checkout
+1. See if you can find any relevant coupons: https://jlcpcb.com/coupon-center. There's likely a $15 off coupon for SMT orders over $150. Maybe also a new customer coupon.
+1. Finish the checkout process
+
 ## Power Consumption
 
 Power consumption of the electronics was measured using a bench power supply set to 18V. Here are the results:
