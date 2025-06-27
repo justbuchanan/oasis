@@ -8977,7 +8977,7 @@
 		(path "/b83165ed-6b73-4c2e-bfd1-c875be28dcf0")
 		(sheetname "/")
 		(sheetfile "pcb.kicad_sch")
-		(attr through_hole)
+		(attr through_hole exclude_from_bom dnp)
 		(fp_line
 			(start -1.33 1.33)
 			(end 0 1.33)
@@ -9742,6 +9742,20 @@
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "72cf9b71-fe84-4faa-b6bf-bb5b92b87bc5")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+				(justify mirror)
+			)
+		)
+		(property "LCSC Part #" "C124378"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "B.Fab")
+			(hide yes)
+			(uuid "4733059d-f6c3-4ccb-9493-00e74606d01b")
 			(effects
 				(font
 					(size 1 1)

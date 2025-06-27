@@ -10418,6 +10418,15 @@
 				)
 			)
 		)
+		(property "LCSC Part #" "C124378"
+			(at 27.94 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7510c1b9-75d0-46de-9675-3aaeced9afd6")
 		)
@@ -11409,9 +11418,9 @@
 		(at 54.61 105.41 180)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(fields_autoplaced yes)
 		(uuid "b83165ed-6b73-4c2e-bfd1-c875be28dcf0")
 		(property "Reference" "J1"
