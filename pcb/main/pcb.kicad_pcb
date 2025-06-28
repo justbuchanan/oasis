@@ -1633,7 +1633,7 @@
 				)
 			)
 		)
-		(property "Value" "ESP32-C3-WROOM-02"
+		(property "Value" "ESP32-C3-WROOM-02-N4"
 			(at 0 8 0)
 			(layer "F.Fab")
 			(uuid "8c06bf67-344c-4883-80ca-f8edea53489c")
@@ -1676,6 +1676,19 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "966a1b26-daf3-4081-b722-a492f4f5100a")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC Part #" "C2934560"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5b45b756-5ac5-4705-b53d-4e3e94625795")
 			(effects
 				(font
 					(size 1 1)

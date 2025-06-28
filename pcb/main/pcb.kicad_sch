@@ -9172,7 +9172,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "ESP32-C3-WROOM-02"
+		(property "Value" "ESP32-C3-WROOM-02-N4"
 			(at 107.5533 71.12 0)
 			(effects
 				(font
@@ -9214,6 +9214,15 @@
 				(font
 					(size 1.27 1.27)
 				)
+			)
+		)
+		(property "LCSC Part #" "C2934560"
+			(at 105.41 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
 			)
 		)
 		(pin "19"
