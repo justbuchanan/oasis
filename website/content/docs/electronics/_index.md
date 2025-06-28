@@ -76,7 +76,7 @@ And one key disadvantage: it is possible to write firmware that outputs an "alwa
 
 I chose to use an input voltage supply of 18v in order to satisfy the requirements of the higher-voltage devices, then include a voltage regulator to provide 3.3v for the lower-voltage devices. I selected a buck converter from TI and used their WeBench tool to design a regulator circuit. See details [here](https://github.com/justbuchanan/oasis/blob/main/pcb/reference/voltage-circuit-export-from-ti-webench.pdf).
 
-## Thermal Considerations
+### Thermal Considerations
 
 It turns out that LEDs, even fairly efficient ones like we're using here, produce a lot of heat.
 
