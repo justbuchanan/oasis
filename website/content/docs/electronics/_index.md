@@ -13,6 +13,8 @@ There are essentially three options for obtaining the electronics:
 - Order fully-assembled PCBs from JLCPCB. This can be a good option if you'd prefer not to solder the boards yourself, but it can be expensive for small order quantities.
 - [Sign up to buy a kit](/docs/contact/#buying-a-kit) if/when they become available. I don't have any immediate or concrete plans to sell these, but will consider it if there's enough interest.
 
+See the [PCB Ordering Guide](#pcb-ordering-guide) below for more info.
+
 ## Design
 
 ### Overview
