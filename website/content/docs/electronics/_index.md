@@ -153,60 +153,6 @@ The sht30 sensor board comes without a cable. You'll need to solder a standard 4
 
 ![sht30_wiring](sht30_wiring.jpg)
 
-## PCB Order History
-
-Below are all three circuit board orders I've placed for this project (as of June 2025). All boards were ordered from JLCPCB and include varying levels of assembly (components sourced and soldered by JLCPCB).
-
-### v0.1 all-in-one board - Feb 11, 2025
-
-Single-board design - esp32, leds, sht30 temp/humid sensor, and everything else all on one board.
-
-A lot of the board was assembled by JLC, but the following parts were purchased and assembled separately (in total, probably $17 worth of parts per board):
-
-- led driver
-- leds
-- sht30 temp/humid sensor
-- sht30 bypass capacitor
-
-Files: https://github.com/justbuchanan/oasis/tree/main/pcb/fabricated-boards/v0.2
-
-#### Pricing
-
-note: this price info is what I was charged by JLC, it does not include the components I sourced and assembled myself (mentioned above).
-
-- total: $140
-    - merchandise total: $89
-    - shipping: $38
-    - sales tax: $13
-
-This order was for five boards, so price/board was $28 + ~$17 = ~$45.
-
-### v0.2 ledboard - March 16, 2025
-
-Based on the poor thermal performance of the all-in-one boards, I decided to do a major redesign and put the leds on their own board, made out of solid aluminum. The rest of the electronics are on their own board.
-
-This order is for 5x 1.6mm thick aluminum boards for the leds. Price/board = $6.84. This price doesn't include the 5 Cree XT-E LEDs or the connector cable soldered on.
-
-Files: https://github.com/justbuchanan/oasis/tree/main/pcb/fabricated-boards/ledboard-v0.3
-
-#### Pricing
-
-- total: $35
-    - merchandise total: $14
-    - shipping: $18
-    - sales tax: $3
-
-### v0.2 mainboard - March 21, 2025
-
-Files: https://github.com/justbuchanan/oasis/tree/main/pcb/fabricated-boards/mainboard-v0.3
-
-5 Control boards. Fully assembled except the 2 4-pin headers. Price/board = $40.6.
-
-- total: $203
-    - merchandise total: $153
-    - shipping: $29
-    - sales tax: $21
-
 ## PCB Ordering Guide
 
 There are a lot of options for custom PCB manufacturing. I chose to go with JLCPCB due to low cost, support for board assembly, and extensive component catalog. PCBWay is another good option that also provides assembly services. OSH Park is a good choice for US-based manufacturing, but they don't offer assembly services.
@@ -261,6 +207,60 @@ Below is a step-by-step guide to placing a board order through JLCPCB. This will
 1. "Save to Cart" and continue on to checkout
 1. See if you can find any relevant coupons: https://jlcpcb.com/coupon-center. There's likely a $15 off coupon for SMT orders over $150. Maybe also a new customer coupon.
 1. Finish the checkout process
+
+## PCB Order History
+
+Below are all three circuit board orders I've placed for this project (as of June 2025). All boards were ordered from JLCPCB and include varying levels of assembly (components sourced and soldered by JLCPCB).
+
+### v0.1 all-in-one board - Feb 11, 2025
+
+Single-board design - esp32, leds, sht30 temp/humid sensor, and everything else all on one board.
+
+A lot of the board was assembled by JLC, but the following parts were purchased and assembled separately (in total, probably $17 worth of parts per board):
+
+- led driver
+- leds
+- sht30 temp/humid sensor
+- sht30 bypass capacitor
+
+Files: https://github.com/justbuchanan/oasis/tree/main/pcb/fabricated-boards/v0.2
+
+#### Pricing
+
+note: this price info is what I was charged by JLC, it does not include the components I sourced and assembled myself (mentioned above).
+
+- total: $140
+    - merchandise total: $89
+    - shipping: $38
+    - sales tax: $13
+
+This order was for five boards, so price/board was $28 + ~$17 = ~$45.
+
+### v0.2 ledboard - March 16, 2025
+
+Based on the poor thermal performance of the all-in-one boards, I decided to do a major redesign and put the leds on their own board, made out of solid aluminum. The rest of the electronics are on their own board.
+
+This order is for 5x 1.6mm thick aluminum boards for the leds. Price/board = $6.84. This price doesn't include the 5 Cree XT-E LEDs or the connector cable soldered on.
+
+Files: https://github.com/justbuchanan/oasis/tree/main/pcb/fabricated-boards/ledboard-v0.3
+
+#### Pricing
+
+- total: $35
+    - merchandise total: $14
+    - shipping: $18
+    - sales tax: $3
+
+### v0.2 mainboard - March 21, 2025
+
+Files: https://github.com/justbuchanan/oasis/tree/main/pcb/fabricated-boards/mainboard-v0.3
+
+5 Control boards. Fully assembled except the 2 4-pin headers. Price/board = $40.6.
+
+- total: $203
+    - merchandise total: $153
+    - shipping: $29
+    - sales tax: $21
 
 ## Power Consumption
 
