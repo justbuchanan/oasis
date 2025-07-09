@@ -700,20 +700,21 @@ fn record_to_influxdb(
     let mut response = request.submit()?;
 
     // Process response
-    let _status = response.status();
-    let mut buf = [0u8; 1024];
-    let bytes_read = io::try_read_full(&mut response, &mut buf).map_err(|e| e.0)?;
-    match std::str::from_utf8(&buf[0..bytes_read]) {
-        Ok(_body_string) => {
-            // log::info!(
-            //     "Response body (truncated to {} bytes): {:?}",
-            //     buf.len(),
-            //     body_string
-            // );
-        }
-        Err(e) => log::error!("Error decoding response body from influxdb: {e}"),
-    };
-    // TODO: return an error if the POST didn't succeed
+    let status = response.status();
+    if status < 200 || status > 300 {
+        let mut buf = [0u8; 1024];
+        let bytes_read = io::try_read_full(&mut response, &mut buf).map_err(|e| e.0)?;
+        return Err(match std::str::from_utf8(&buf[0..bytes_read]) {
+            Ok(body_string) => {
+                anyhow::anyhow!(
+                    "Error from influxdb (truncated to {} bytes): {:?}",
+                    buf.len(),
+                    body_string
+                )
+            }
+            Err(e) => anyhow::anyhow!("Error decoding response body from influxdb: {e}"),
+        });
+    }
 
     Ok(())
 }
