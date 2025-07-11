@@ -124,9 +124,10 @@ PCB_RENDER_ARGS=--quality high --perspective --floor --preset=follow_pcb_editor
 
 # Consider adding --include-tracks --include-zones
 # It looks cooler with them, but it takes longer to process and results in a larger / more complicated output
+# TODO: kicad 9.0.3 seems to have broken something with step export. The file still exports, but the process exits with exit code 2. I added the `|| true` as a temporary workaround, but this is a total hack and should be removed when possible.
 build/pcb/main/pcb.step: pcb/main/pcb.kicad_pcb
 	@mkdir -p $(@D)
-	kicad-cli pcb export step --subst-models --output $@ $^
+	kicad-cli pcb export step --subst-models --output $@ $^ || true
 
 build/pcb/main/pcb.glb: pcb/main/pcb.kicad_pcb
 	@mkdir -p $(@D)
