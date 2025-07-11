@@ -29,9 +29,6 @@ struct Args {
 
     #[command(subcommand)]
     command: Commands,
-
-    #[arg(long, help = "If true, output is printed in json format")]
-    json: bool,
 }
 
 #[derive(Subcommand, Debug)]
@@ -42,7 +39,10 @@ enum Commands {
         overrides: Vec<String>,
     },
     /// Get the temperature and humidity of the terrarium, as well as the current state of the lights, fans, and mister.
-    State,
+    State {
+        #[arg(long, help = "If true, output is printed in json format")]
+        json: bool,
+    },
     /// Get or set the terrarium configuration. This includes wifi details and schedule.
     Config {
         #[arg(long)]
@@ -100,7 +100,7 @@ async fn main() -> anyhow::Result<()> {
                 return Err(anyhow!("Control failed: {}", resp.text().await?));
             }
         }
-        Commands::State => {
+        Commands::State { json } => {
             log::info!("Connecting to terrarium at '{addr}'...");
             let client = reqwest::Client::new();
 
@@ -114,7 +114,7 @@ async fn main() -> anyhow::Result<()> {
             }
 
             let text = resp.text().await.unwrap();
-            if args.json {
+            if *json {
                 println!("{text}");
             } else {
                 let state: TerrariumState = serde_json::from_str(&text).unwrap();
@@ -161,12 +161,7 @@ async fn main() -> anyhow::Result<()> {
                 }
 
                 let text = resp.text().await.unwrap();
-                if args.json {
-                    println!("{text}");
-                } else {
-                    // TODO: format it not as json
-                    println!("{text}");
-                }
+                println!("{text}");
             }
         }
         Commands::Scan { timeout } => {
