@@ -30,7 +30,7 @@
                 line-height: 1.6;
                 color: var(--text-color);
                 background-color: var(--bg-color);
-                padding: 20px;
+                padding: 15px;
                 max-width: 600px;
                 margin: 0 auto;
             }
@@ -47,7 +47,7 @@
                 background: var(--card-bg);
                 border-radius: 8px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                padding: 20px;
+                padding: 12px;
                 margin-bottom: 20px;
             }
 
@@ -290,16 +290,52 @@
                 flex-direction: column;
             }
 
+            /* Mobile responsive layout */
+            @media (max-width: 600px) {
+                x-schedule-entry {
+                    align-items: flex-start;
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .schedule-entry-container {
+                    margin-right: 0;
+                    margin-bottom: 10px;
+                }
+
+                .delete-button {
+                    align-self: flex-end;
+                }
+
+                .schedule-entry-row > p {
+                    font-size: 14px;
+                }
+            }
+
+            hr {
+                margin-bottom: 10px;
+            }
+
+            .card-sub-section + .card-sub-section {
+                margin-top: 20px;
+            }
+
+            .card-sub-sub-section + .card-sub-sub-section {
+                margin-top: 20px;
+            }
+
             .schedule-entry-container input {
                 margin-right: 8px;
                 margin-left: 8px;
             }
+
             .schedule-entry-container input[type="checkbox"] {
                 margin-left: 0px;
             }
 
             .schedule-entry-row {
                 display: flex;
+                flex-wrap: nowrap;
                 align-items: center;
                 margin-top: 4px;
                 margin-bottom: 4px;
@@ -408,40 +444,48 @@
                 <input type="time" id="light-schedule-off-time" />
             </div>
 
-            <h3>Mist</h3>
-            <hr />
+            <div class="card-sub-section">
+                <h3>Mist</h3>
+                <hr />
 
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <h4>Auto Mist</h4>
-                <input type="checkbox" id="auto-mist-enabled" disabled />
-            </div>
-            <div id="auto-mist-container">
-                <label for="mist-minimum-humidity" disabled
-                    >Minimum Humidity:</label
-                >
-                <input
-                    type="range"
-                    id="mist-minimum-humidity"
-                    class="slider"
-                    min="0"
-                    max="95"
-                    value="0"
-                    disabled
-                />
-                <div
-                    class="value-display"
-                    id="mist-minimum-humidity-value-display"
-                >
-                    0%
+                <div class="card-sub-sub-section">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <h4>Auto Mist</h4>
+                        <input type="checkbox" id="auto-mist-enabled" disabled />
+                    </div>
+                    <div id="auto-mist-container">
+                        <label for="mist-minimum-humidity" disabled
+                            >Minimum Humidity:</label
+                        >
+                        <input
+                            type="range"
+                            id="mist-minimum-humidity"
+                            class="slider"
+                            min="0"
+                            max="95"
+                            value="0"
+                            disabled
+                        />
+                        <div
+                            class="value-display"
+                            id="mist-minimum-humidity-value-display"
+                        >
+                            0%
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-sub-sub-section">
+                    <h4>Mist Schedule</h4>
+                    <x-schedule-list id="mist-schedule-list"></x-schedule-list>
                 </div>
             </div>
 
-            <h4>Mist Schedule</h4>
-            <x-schedule-list id="mist-schedule-list"></x-schedule-list>
-
-            <h3>Fans</h3>
-            <hr />
-            <x-schedule-list id="fan-schedule-list"></x-schedule-list>
+            <div class="card-sub-section">
+                <h3>Fans</h3>
+                <hr />
+                <x-schedule-list id="fan-schedule-list"></x-schedule-list>
+            </div>
         </div>
 
         <h2>Settings</h2>
@@ -575,7 +619,7 @@
                         , run for <input type="number" class="schedule-duration-input" value=${this._data.duration_secs} style="width: 50px;"></input> seconds.
                     </div>
                     <div class="schedule-entry-row">
-                        <input type="checkbox" ${this._data.repeat ? "checked" : ""}></input> Repeat every <input type="number" value=${this._data.repeat ? this._data.repeat.n_hours : 1} class="schedule-interval-input" style="width: 50px;" ${this._data.repeat ? "" : "disabled"}></input> hours until <input type="time" class="schedule-stop-input" value=${this._data.repeat ? this._data.repeat.stop_time : "22:00"} ${this._data.repeat ? "" : "disabled"}></input>
+                        <input type="checkbox" ${this._data.repeat ? "checked" : ""}></input> <p>Repeat every</p> <input type="number" value=${this._data.repeat ? this._data.repeat.n_hours : 1} class="schedule-interval-input" style="width: 20px;" ${this._data.repeat ? "" : "disabled"}></input> <p>hours until</p> <input type="time" class="schedule-stop-input" value=${this._data.repeat ? this._data.repeat.stop_time : "22:00"} ${this._data.repeat ? "" : "disabled"}></input>
                     </div>
                 </div>
                 <button class="delete-button">Delete</button>
