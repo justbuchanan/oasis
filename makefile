@@ -26,31 +26,31 @@ clean:
 
 build/cadquery/top.step: cadquery/oasis.py cadquery/util.py oasis_constants.py
 	@mkdir -p $(@D)
-	PYTHONPATH=./ cq-cli --infile cadquery/oasis.py --expression="Top(TopProfile(),vent_holes=True).shape" --outfile $@
+	PYTHONPATH="./:$$PYTHONPATH" cq-cli --infile cadquery/oasis.py --expression="Top(TopProfile(),vent_holes=True).shape" --outfile $@
 
 build/cadquery/underplate.step: cadquery/oasis.py cadquery/util.py oasis_constants.py
 	@mkdir -p $(@D)
-	PYTHONPATH=./ cq-cli --infile cadquery/oasis.py --expression="Underplate(Top(TopProfile())).shape" --outfile $@
+	PYTHONPATH="./:$$PYTHONPATH" cq-cli --infile cadquery/oasis.py --expression="Underplate(Top(TopProfile())).shape" --outfile $@
 
 build/cadquery/bottom.step: cadquery/oasis.py cadquery/util.py oasis_constants.py
 	@mkdir -p $(@D)
-	PYTHONPATH=./ cq-cli --infile cadquery/oasis.py --expression="Bottom(BottomProfile()).shape" --outfile $@
+	PYTHONPATH="./:$$PYTHONPATH" cq-cli --infile cadquery/oasis.py --expression="Bottom(BottomProfile()).shape" --outfile $@
 
 build/cadquery/top_plug.step: cadquery/oasis.py cadquery/util.py oasis_constants.py
 	@mkdir -p $(@D)
-	PYTHONPATH=./ cq-cli --infile cadquery/oasis.py --expression="TopPlug().shape" --outfile $@
+	PYTHONPATH="./:$$PYTHONPATH" cq-cli --infile cadquery/oasis.py --expression="TopPlug().shape" --outfile $@
 
 build/cadquery/mister_mount_cover.step: cadquery/oasis.py cadquery/util.py oasis_constants.py
 	@mkdir -p $(@D)
-	PYTHONPATH=./ cq-cli --infile cadquery/oasis.py --expression="mister_mount_cover().rotate_x(180)" --outfile $@
+	PYTHONPATH="./:$$PYTHONPATH" cq-cli --infile cadquery/oasis.py --expression="mister_mount_cover().rotate_x(180)" --outfile $@
 
 build/cadquery/sensor_basket.step: cadquery/oasis.py cadquery/util.py oasis_constants.py
 	@mkdir -p $(@D)
-	PYTHONPATH=./ cq-cli --infile cadquery/oasis.py --expression="SensorBasket(Sht30Board()).shape" --outfile $@
+	PYTHONPATH="./:$$PYTHONPATH" cq-cli --infile cadquery/oasis.py --expression="SensorBasket(Sht30Board()).shape" --outfile $@
 
 build/cadquery/oasis.glb: cadquery/oasis.py cadquery/util.py oasis_constants.py build/pcb/main/pcb.step build/pcb/ledboard/ledboard.step
 	@mkdir -p $(@D)
-	PYTHONPATH=./ cq-cli --infile cadquery/oasis.py --expression="terrarium(explode=0, vent_holes=True)" --outfile $@
+	PYTHONPATH="./:$$PYTHONPATH" cq-cli --infile cadquery/oasis.py --expression="terrarium(explode=0, vent_holes=True)" --outfile $@
 
 
 # GCode for 3d printing

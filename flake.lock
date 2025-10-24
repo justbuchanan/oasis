@@ -1,0 +1,303 @@
+{
+  "nodes": {
+    "cadquery": {
+      "inputs": {
+        "cadquery-freecad-import-plugin-src": "cadquery-freecad-import-plugin-src",
+        "cadquery-src": "cadquery-src",
+        "cq-cli-src": "cq-cli-src",
+        "cq-editor-src": "cq-editor-src",
+        "flake-utils": "flake-utils",
+        "nixpkgs": "nixpkgs",
+        "ocp-src": "ocp-src",
+        "ocp-stubs-src": "ocp-stubs-src",
+        "pybind11-stubgen-src": "pybind11-stubgen-src",
+        "pywrap-src": "pywrap-src"
+      },
+      "locked": {
+        "lastModified": 1761341103,
+        "narHash": "sha256-9fQ9M0Q4mCqsIWjRikUwEJgxVJAQX+5SOPROlI7O+zg=",
+        "owner": "justbuchanan",
+        "repo": "cq-flake",
+        "rev": "c2b0cb4c1d8193ecd9c7d01fe7f17a438edc797d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "justbuchanan",
+        "ref": "main",
+        "repo": "cq-flake",
+        "type": "github"
+      }
+    },
+    "cadquery-freecad-import-plugin-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1734615666,
+        "narHash": "sha256-/puHlsdDqdVbVdxOkkwMEW/S//BztFA8fNkTp9PbSYY=",
+        "owner": "jmwright",
+        "repo": "cadquery-freecad-import-plugin",
+        "rev": "a0f72aedafc80e40b486d991f8659ed4ce5eb147",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jmwright",
+        "repo": "cadquery-freecad-import-plugin",
+        "type": "github"
+      }
+    },
+    "cadquery-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1741533881,
+        "narHash": "sha256-LNzo356Chh52Soi91i/z5fD9mDlh3P0saUieS5f399g=",
+        "owner": "CadQuery",
+        "repo": "cadquery",
+        "rev": "471ab6fcc79b6ce64b857d33d06202c030cf5459",
+        "type": "github"
+      },
+      "original": {
+        "owner": "CadQuery",
+        "repo": "cadquery",
+        "rev": "471ab6fcc79b6ce64b857d33d06202c030cf5459",
+        "type": "github"
+      }
+    },
+    "cq-cli-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1742395288,
+        "narHash": "sha256-aiLjhyQLeXy4kDW9C8n5XL2BqKGixufTgVKOPWiTZ9c=",
+        "owner": "CadQuery",
+        "repo": "cq-cli",
+        "rev": "6a6076a1659fe3cfd706cb353725e5cf3f4b4715",
+        "type": "github"
+      },
+      "original": {
+        "owner": "CadQuery",
+        "repo": "cq-cli",
+        "type": "github"
+      }
+    },
+    "cq-editor-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1739812831,
+        "narHash": "sha256-6cFVT+HIRoht1XPY+mvk9iTQ50Q8kqx9XxgNsRMFQ9c=",
+        "owner": "CadQuery",
+        "repo": "CQ-editor",
+        "rev": "7c92ec9d967f0f1e295a0f2dcf779ea871338e08",
+        "type": "github"
+      },
+      "original": {
+        "owner": "CadQuery",
+        "ref": "0.4.0",
+        "repo": "CQ-editor",
+        "type": "github"
+      }
+    },
+    "flake-utils": {
+      "inputs": {
+        "systems": "systems"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "flake-utils_2": {
+      "inputs": {
+        "systems": "systems_2"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1742889210,
+        "narHash": "sha256-hw63HnwnqU3ZQfsMclLhMvOezpM7RSB0dMAtD5/sOiw=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "698214a32beb4f4c8e3942372c694f40848b360d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1761016216,
+        "narHash": "sha256-G/iC4t/9j/52i/nm+0/4ybBmAF4hzR8CNHC75qEhjHo=",
+        "rev": "481cf557888e05d3128a76f14c76397b7d7cc869",
+        "revCount": 811543,
+        "type": "tarball",
+        "url": "https://api.flakehub.com/f/pinned/NixOS/nixpkgs/0.2505.811543%2Brev-481cf557888e05d3128a76f14c76397b7d7cc869/019a0d00-921b-7a34-bd68-ed559f7df525/source.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://flakehub.com/f/NixOS/nixpkgs/0"
+      }
+    },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1744536153,
+        "narHash": "sha256-awS2zRgF4uTwrOKwwiJcByDzDOdo3Q1rPZbiHQg/N38=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "18dd725c29603f582cf1900e0d25f9f1063dbf11",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "ocp-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1739132137,
+        "narHash": "sha256-vWAqCGgs7YnwHRhPAXkBQqCs+Y3zk4BMu1boZo3PLGA=",
+        "owner": "cadquery",
+        "repo": "ocp",
+        "rev": "01055e099a3b1a34da38bb1f5457f06a2d4c7a18",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cadquery",
+        "ref": "7.8.1.2",
+        "repo": "ocp",
+        "type": "github"
+      }
+    },
+    "ocp-stubs-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1672527176,
+        "narHash": "sha256-m9Rg36GYlYfwEfF0PQJWEXf8TyM5HmjeuhJCODiurvY=",
+        "owner": "cadquery",
+        "repo": "ocp-stubs",
+        "rev": "e838ff400d5ee2f4a0579d2a713b19311855288f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cadquery",
+        "repo": "ocp-stubs",
+        "type": "github"
+      }
+    },
+    "pybind11-stubgen-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1700678104,
+        "narHash": "sha256-76u1GcHPPh8oYQeQZDJ4K/so0U7F6rznZ1xa6syqI9s=",
+        "owner": "CadQuery",
+        "repo": "pybind11-stubgen",
+        "rev": "6dc681d838d3ec9a8a9aa4260c8392d3fb700ff0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "CadQuery",
+        "repo": "pybind11-stubgen",
+        "type": "github"
+      }
+    },
+    "pywrap-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1736233855,
+        "narHash": "sha256-u+P/SUGpYhzA1oVbEv26DF8PBEpsotEk4iXIXZhgzHc=",
+        "owner": "CadQuery",
+        "repo": "pywrap",
+        "rev": "9c9ca5b8aa0d9a6687394897815a682b8c319fb0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "CadQuery",
+        "repo": "pywrap",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "cadquery": "cadquery",
+        "flake-utils": "flake-utils_2",
+        "nixpkgs": "nixpkgs_2",
+        "rust-overlay": "rust-overlay"
+      }
+    },
+    "rust-overlay": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1761273263,
+        "narHash": "sha256-6d6ojnu6A6sVxIjig8OL6E1T8Ge9st3YGgVwg5MOY+Q=",
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "rev": "28405834d4fdd458d28e123fae4db148daecec6f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "systems": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_2": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
