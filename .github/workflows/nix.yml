@@ -21,10 +21,6 @@ jobs:
       with:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
-    # TODO: does this add add anything if we're using cachix?
-    - name: Run the Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@main
-
     - uses: cachix/cachix-action@v15
       with:
         name: justbuchanan-oasis
