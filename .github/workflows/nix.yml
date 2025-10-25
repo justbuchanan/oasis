@@ -33,6 +33,9 @@ jobs:
     - name: Check flake
       run: nix flake check
 
+    - name: Check disk usage
+      run: df -h
+
     - name: Construct nix env
       run: nix develop -c echo hi
 
