@@ -43,6 +43,29 @@
         };
       in
       {
+        packages.oasis-client = pkgs.rustPlatform.buildRustPackage {
+          pname = "oasis";
+          version = "0.1.0";
+          src = ./code;
+          sourceRoot = "code/client";
+          cargoLock.lockFile = ./code/client/Cargo.lock;
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+          ];
+          buildInputs = with pkgs; [
+            openssl
+          ];
+          postUnpack = ''
+            cp -r code/terralib code/client/
+          '';
+          postInstall = ''
+            # Rename the binary from 'client' to 'oasis'
+            mv $out/bin/client $out/bin/oasis
+          '';
+        };
+
+        packages.default = self.packages.${system}.oasis;
+
         devShells.default =
           with pkgs;
           mkShell {

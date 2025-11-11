@@ -174,7 +174,7 @@ fn evaluate_scheduled_events(events: &Vec<ScheduledEvent>, t: Time) -> bool {
 
         if let Some(repeat) = &event.repeat {
             loop {
-                start_time += std::time::Duration::from_hours(repeat.n_hours.into());
+                start_time += std::time::Duration::from_secs(repeat.n_hours as u64 * 3600);
                 if start_time > repeat.stop_time {
                     break;
                 }
