@@ -41,8 +41,45 @@
         rustToolchain = pkgs.rust-bin.nightly.latest.default.override {
           extensions = [ "rust-src" ];
         };
+
+        # FHS environment for ESP32 development (allows ESP-IDF toolchain to run on NixOS)
+        esp32-fhs = pkgs.buildFHSEnv {
+          name = "esp32-fhs";
+          targetPkgs = pkgs: with pkgs; [
+            rustToolchain
+            pkg-config
+            cmake
+            ninja
+            python3
+            python3Packages.pip
+            python3Packages.virtualenv
+            git
+            wget
+            gnumake
+            flex
+            bison
+            gperf
+            ncurses5
+            zlib
+            stdenv.cc
+            libclang
+            openssl
+          ];
+          runScript = "bash";
+          profile = ''
+            export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath [
+              pkgs.stdenv.cc.cc.lib
+              pkgs.zlib
+              pkgs.ncurses5
+            ]}
+            export LIBCLANG_PATH="${pkgs.libclang.lib}/lib"
+            # Unset PYTHONPATH to avoid conflicts with ESP-IDF venv
+            unset PYTHONPATH
+          '';
+        };
       in
       {
+        packages.esp32-fhs = esp32-fhs;
         packages.oasis-client = pkgs.rustPlatform.buildRustPackage {
           pname = "oasis";
           version = "0.1.0";
@@ -86,22 +123,32 @@
               shfmt
               treefmt
               zlib
+              # ESP32 tooling - dependencies for ESP-IDF
+              pkg-config
+              cmake
+              ninja
+              python3
+              git
+              libclang
+              ncurses5
+              stdenv.cc.cc.lib
+              espflash
             ];
 
             shellHook = ''
-              # Set IDF_TOOLS_PATH for ESP-IDF builds to use the local embuild directory
-              export IDF_TOOLS_PATH="$PWD/code/esp32/.embuild/espressif"
-              # Prioritize ESP-IDF venv site-packages over nix store packages
-              # TODO: do better - this is pretty fragile
-              if [ -d "$PWD/code/esp32/.embuild/espressif/python_env/idf5.4_py3.12_env/lib/python3.12/site-packages" ]; then
-                export PYTHONPATH="$PWD/code/esp32/.embuild/espressif/python_env/idf5.4_py3.12_env/lib/python3.12/site-packages:$PYTHONPATH"
-              fi
+              # Add libraries to LD_LIBRARY_PATH for libclang (used by ESP-IDF bindgen)
+              export LD_LIBRARY_PATH="${zlib}/lib:${stdenv.cc.cc.lib}/lib:${ncurses5}/lib:$LD_LIBRARY_PATH"
+
+              # Set LIBCLANG_PATH for bindgen
+              export LIBCLANG_PATH="${libclang.lib}/lib"
 
               # add pcbnew to python path
               export PYTHONPATH="$(dirname $(dirname $(readlink -f $(which kicad-cli))))/lib/python3.12/site-packages:$PYTHONPATH"
 
-              # Add libraries to LD_LIBRARY_PATH for libclang (used by ESP-IDF bindgen)
-              export LD_LIBRARY_PATH="${zlib}/lib:${stdenv.cc.cc.lib}/lib:$LD_LIBRARY_PATH"
+              # For ESP32 development on NixOS, use: nix run .#esp32-fhs
+              # This provides an FHS environment where ESP-IDF toolchain binaries can run
+              echo "Note: For ESP32 builds on NixOS, run 'nix run .#esp32-fhs' from the oasis root directory"
+              echo "Then navigate to code/esp32 and run 'cargo build'"
             '';
           };
       }
