@@ -71,7 +71,7 @@ async fn main(spawner: Spawner) {
     let _mounted_littlefs = mount_data_partition().expect("Mounting data partition");
     let cfg = match read_config_file() {
         Ok(cfg) => {
-            log::info!("Successfully read config file from nvs: {cfg:?}");
+            log::info!("Successfully read config file from nvs");
             cfg
         }
         Err(err) => {
