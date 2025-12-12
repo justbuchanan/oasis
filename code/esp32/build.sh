@@ -8,4 +8,4 @@ cd "$(dirname "$0")"
 OASIS_ROOT="$(cd ../.. && pwd)"
 
 # Run cargo build in the FHS environment
-exec "$OASIS_ROOT/result/bin/esp32-fhs" -c "unset PYTHONPATH; cargo build $*"
+exec "$OASIS_ROOT/result/bin/esp32-fhs" -c "unset PYTHONPATH; cargo run --bin oasis $*"
