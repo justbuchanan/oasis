@@ -53,8 +53,8 @@ esp-idf-svc = { git = "https://github.com/justbuchanan/esp-idf-svc", rev = "d084
 esp-idf-hal = { git = "https://github.com/esp-rs/esp-idf-hal", rev = "ad305a909c559c9770c2bcfd9d4aa10dc55f4cee" }
 anyhow = "1.0.96"
 embedded-svc = "0.28.1"
-serde = "1.0.197"
-serde_json = "1.0.114"
+serde = "1.0"
+serde_json = "1.0"
 sht3x = { git = "https://github.com/miek/sht3x-rs", version = "0.1.1" }
 terralib = { path = "../terralib"}
 embassy-executor = { version = "0.7.0", features = ["arch-std", "executor-thread"] }
