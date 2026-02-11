@@ -17,8 +17,7 @@
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0"; # Stable Nixpkgs
     rust-overlay.url = "github:oxalica/rust-overlay";
     flake-utils.url = "github:numtide/flake-utils";
-    # My fork of cq-flake contains cq-cli, which isn't upstreamed yet
-    cadquery.url = "github:justbuchanan/cq-flake?ref=main";
+    cadquery.url = "github:vinszent/cq-flake?ref=main";
   };
 
   outputs =
@@ -64,7 +63,7 @@
           '';
         };
 
-        packages.default = self.packages.${system}.oasis;
+        packages.default = self.packages.${system}.oasis-client;
 
         devShells.default =
           with pkgs;
