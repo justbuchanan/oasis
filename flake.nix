@@ -70,9 +70,9 @@
           mkShell {
             buildInputs = [
               (kicad.override { withScripting = true; })
-              cadquery.packages.${pkgs.system}.cq-cli
-              cadquery.packages.${pkgs.system}.cq-editor
-              cadquery.packages.${pkgs.system}.cq-warehouse
+              cadquery.packages.${system}.cq-cli
+              cadquery.packages.${system}.cq-editor
+              cadquery.packages.${system}.cq-warehouse
               gnumake
               nixfmt-rfc-style
               nodePackages.prettier
