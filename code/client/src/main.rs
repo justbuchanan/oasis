@@ -73,14 +73,17 @@ async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     // The terrarium address can be passed by flag or environment variable. Flag
-    // takes precedence.
-    let addr = args
-        .addr
-        .or(env::var("OASIS_ADDR").ok())
-        .expect("No address specified. Either pass --addr or set OASIS_ADDR env var.");
+    // takes precedence. Only required for commands that connect to a specific terrarium.
+    let get_addr = || {
+        args.addr
+            .clone()
+            .or(env::var("OASIS_ADDR").ok())
+            .expect("No address specified. Either pass --addr or set OASIS_ADDR env var.")
+    };
 
     match &args.command {
         Commands::Ctl { overrides } => {
+            let addr = get_addr();
             log::info!("Connecting to terrarium at '{addr}'...");
             let client = reqwest::Client::new();
 
@@ -101,6 +104,7 @@ async fn main() -> anyhow::Result<()> {
             }
         }
         Commands::State { json } => {
+            let addr = get_addr();
             log::info!("Connecting to terrarium at '{addr}'...");
             let client = reqwest::Client::new();
 
@@ -127,6 +131,7 @@ async fn main() -> anyhow::Result<()> {
             config_json,
             config_file,
         } => {
+            let addr = get_addr();
             log::info!("Connecting to terrarium at '{addr}'...");
             let client = reqwest::Client::new();
 
