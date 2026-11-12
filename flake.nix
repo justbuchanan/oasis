@@ -37,7 +37,9 @@
         pkgs = import nixpkgs {
           inherit system overlays;
         };
-        rustToolchain = pkgs.rust-bin.nightly.latest.default.override {
+        # Pinned because newer nightlies' std fails to build for
+        # riscv32imc-esp-espidf (no field `st_atime` on `libc::stat`).
+        rustToolchain = pkgs.rust-bin.nightly."2026-02-11".default.override {
           extensions = [ "rust-src" ];
         };
       in
@@ -89,6 +91,9 @@
               treefmt
               zlib
             ];
+
+            # libclang for bindgen in ESP-IDF builds (esp-idf-sys)
+            LIBCLANG_PATH = "${llvmPackages.libclang.lib}/lib";
 
             shellHook = ''
               # Set IDF_TOOLS_PATH for ESP-IDF builds to use the local embuild directory
