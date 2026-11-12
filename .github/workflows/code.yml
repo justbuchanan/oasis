@@ -7,7 +7,9 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Pinned because esp-idf-sys's bindgen output with ubuntu-26.04's
+    # libclang doesn't match what esp-idf-hal expects (spi_transaction_t).
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     steps:
