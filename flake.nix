@@ -72,10 +72,13 @@
               (kicad.override { withScripting = true; })
               cadquery.packages.${system}.cq-cli
               cadquery.packages.${system}.cq-editor
-              cadquery.packages.${system}.cq-warehouse
+              # cq-warehouse has no tests and unittest now fails on "NO TESTS RAN"
+              (cadquery.packages.${system}.cq-warehouse.overridePythonAttrs (_: {
+                doCheck = false;
+              }))
               gnumake
-              nixfmt-rfc-style
-              nodePackages.prettier
+              nixfmt
+              prettier
               openssl
               python312Packages.mpmath
               python312Packages.wxpython
