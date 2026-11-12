@@ -1,3 +1,5 @@
 [toolchain]
-channel = "nightly"
+# Pinned because newer nightlies' std fails to build for riscv32imc-esp-espidf.
+# Keep in sync with flake.nix and .github/workflows/code.yml.
+channel = "nightly-2026-02-11"
 components = ["rust-src"]
