@@ -590,10 +590,21 @@ async fn connect_wifi(
 
     let wifi_configuration: wifi::Configuration =
         wifi::Configuration::Client(wifi::ClientConfiguration {
-            ssid: creds.ssid.as_str().try_into().expect(""),
+            // Return an error rather than panicking on bad creds (e.g. from
+            // an old config file) so that we fall back to AP mode instead of
+            // boot looping.
+            ssid: creds
+                .ssid
+                .as_str()
+                .try_into()
+                .map_err(|_| anyhow::anyhow!("wifi ssid too long"))?,
             bssid: None,
             auth_method: wifi::AuthMethod::WPA2Personal,
-            password: creds.password.as_str().try_into().expect(""),
+            password: creds
+                .password
+                .as_str()
+                .try_into()
+                .map_err(|_| anyhow::anyhow!("wifi password too long"))?,
             channel: None,
             ..Default::default()
         });

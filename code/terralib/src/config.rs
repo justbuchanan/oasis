@@ -32,6 +32,29 @@ pub struct WifiDetails {
     pub password: String,
 }
 
+// Max lengths (in bytes) that the esp32 wifi driver can hold.
+pub const WIFI_SSID_MAX_LEN: usize = 32;
+pub const WIFI_PASSWORD_MAX_LEN: usize = 64;
+
+impl WifiDetails {
+    pub fn validate(&self) -> anyhow::Result<()> {
+        if self.ssid.is_empty() {
+            return Err(anyhow!("Wifi network name can not be empty"));
+        }
+        if self.ssid.len() > WIFI_SSID_MAX_LEN {
+            return Err(anyhow!(
+                "Wifi network name must be at most {WIFI_SSID_MAX_LEN} bytes"
+            ));
+        }
+        if self.password.len() > WIFI_PASSWORD_MAX_LEN {
+            return Err(anyhow!(
+                "Wifi password must be at most {WIFI_PASSWORD_MAX_LEN} bytes"
+            ));
+        }
+        Ok(())
+    }
+}
+
 // TODO: unify this with ScheduledEvent?
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct TimeRange {
@@ -163,24 +186,43 @@ impl Schedule {
     }
 }
 
+const SECS_PER_DAY: i64 = 24 * 3600;
+
+fn secs_since_midnight(t: Time) -> i64 {
+    t.hour() as i64 * 3600 + t.minute() as i64 * 60 + t.second() as i64
+}
+
 fn evaluate_scheduled_events(events: &Vec<ScheduledEvent>, t: Time) -> bool {
+    // Note: all math here is done in seconds since midnight rather than with
+    // `Time` arithmetic, which silently wraps around at midnight.
+    let t = secs_since_midnight(t);
+
+    // An occurrence starting at @start is active at @t if @t falls within
+    // its duration. The schedule repeats daily, so an occurrence that runs
+    // past midnight also covers the start of the (next) day.
+    let is_active = |start: i64, duration_secs: u32| {
+        (t - start).rem_euclid(SECS_PER_DAY) <= duration_secs as i64
+    };
+
     for event in events {
-        let mut start_time = event.start_time;
-        let event_duration = std::time::Duration::from_secs(event.duration_secs.into());
-        let mut end_time = start_time + event_duration;
-        if start_time <= t && t <= end_time {
+        let mut start = secs_since_midnight(event.start_time);
+        if is_active(start, event.duration_secs) {
             return true;
         }
 
         if let Some(repeat) = &event.repeat {
+            // A zero interval would repeat forever at the same time. Treat it
+            // as non-repeating (validation rejects it for new configs).
+            if repeat.n_hours == 0 {
+                continue;
+            }
+            let stop = secs_since_midnight(repeat.stop_time);
             loop {
-                start_time += std::time::Duration::from_secs(repeat.n_hours as u64 * 3600);
-                if start_time > repeat.stop_time {
+                start += repeat.n_hours as i64 * 3600;
+                if start > stop {
                     break;
                 }
-                end_time = start_time + event_duration;
-
-                if start_time <= t && t <= end_time {
+                if is_active(start, event.duration_secs) {
                     return true;
                 }
             }
@@ -269,6 +311,9 @@ impl TerrariumConfigUpdate {
             }
             // TODO: name should be a valid domain name identifier
         }
+        if let Update::Set(wifi) = &self.wifi {
+            wifi.validate()?;
+        }
         if let Update::Set(timezone) = &self.timezone {
             let _tz = jiff::tz::TimeZone::get(timezone)?;
         }
@@ -321,6 +366,9 @@ impl ScheduledEvent {
         if let Some(repeat) = &self.repeat {
             if self.start_time >= repeat.stop_time {
                 return Err(anyhow!("Stop time must be after start time"));
+            }
+            if repeat.n_hours == 0 {
+                return Err(anyhow!("Repeat interval must be at least 1 hour"));
             }
         }
         Ok(())
@@ -493,6 +541,109 @@ mod schedule {
             );
         }
     }
+
+    fn repeating_event(
+        start: &str,
+        duration_secs: u32,
+        n_hours: u32,
+        stop: &str,
+    ) -> ScheduledEvent {
+        ScheduledEvent {
+            start_time: start.parse().unwrap(),
+            duration_secs,
+            repeat: Some(RepeatInfo {
+                n_hours,
+                stop_time: stop.parse().unwrap(),
+            }),
+        }
+    }
+
+    // These used to loop forever because `Time` addition wraps at midnight,
+    // so the repeat never passed the stop time.
+    #[test]
+    fn test_evaluate_scheduled_events_repeat_does_not_wrap() {
+        for event in [
+            repeating_event("10:00", 30, 2, "22:00"),
+            repeating_event("10:00", 30, 1, "23:30"),
+            repeating_event("10:00", 30, 3, "22:00"),
+            repeating_event("10:00", 30, 24, "22:00"),
+            repeating_event("10:00", 30, 0, "22:00"),
+        ] {
+            let events = vec![event];
+            assert!(evaluate_scheduled_events(
+                &events,
+                "10:00:10".parse().unwrap()
+            ));
+            assert!(!evaluate_scheduled_events(
+                &events,
+                "09:00:00".parse().unwrap()
+            ));
+            // Must not fire after the stop time by wrapping around.
+            assert!(!evaluate_scheduled_events(
+                &events,
+                "00:00:10".parse().unwrap()
+            ));
+        }
+
+        let events = vec![repeating_event("10:00", 30, 2, "22:00")];
+        assert!(evaluate_scheduled_events(
+            &events,
+            "22:00:10".parse().unwrap()
+        ));
+        assert!(!evaluate_scheduled_events(
+            &events,
+            "11:00:10".parse().unwrap()
+        ));
+
+        let events = vec![repeating_event("10:00", 30, 25, "22:00")];
+        assert!(!evaluate_scheduled_events(
+            &events,
+            "11:00:10".parse().unwrap()
+        ));
+    }
+
+    #[test]
+    fn test_evaluate_scheduled_events_crosses_midnight() {
+        let events = vec![ScheduledEvent {
+            start_time: "23:59:30".parse().unwrap(),
+            duration_secs: 60,
+            repeat: None,
+        }];
+        assert!(!evaluate_scheduled_events(
+            &events,
+            "23:59:00".parse().unwrap()
+        ));
+        assert!(evaluate_scheduled_events(
+            &events,
+            "23:59:45".parse().unwrap()
+        ));
+        assert!(evaluate_scheduled_events(
+            &events,
+            "00:00:10".parse().unwrap()
+        ));
+        assert!(evaluate_scheduled_events(
+            &events,
+            "00:00:30".parse().unwrap()
+        ));
+        assert!(!evaluate_scheduled_events(
+            &events,
+            "00:00:31".parse().unwrap()
+        ));
+
+        // A repeat whose last occurrence runs past midnight.
+        let events = vec![repeating_event("21:00", 7200, 2, "23:00")];
+        assert!(evaluate_scheduled_events(&events, "00:30".parse().unwrap()));
+        assert!(!evaluate_scheduled_events(
+            &events,
+            "01:30".parse().unwrap()
+        ));
+    }
+
+    #[test]
+    fn validate_rejects_zero_repeat_interval() {
+        assert!(repeating_event("10:00", 30, 0, "22:00").validate().is_err());
+        assert!(repeating_event("10:00", 30, 1, "22:00").validate().is_ok());
+    }
 }
 
 #[cfg(test)]
@@ -532,5 +683,22 @@ mod config_update {
             influxdb: Update::NoChange,
         };
         assert_eq!(upd, upd_expect);
+    }
+
+    #[test]
+    fn validate_wifi_lengths() {
+        let check = |ssid: &str, password: &str| {
+            let mut upd = TerrariumConfigUpdate::default();
+            upd.wifi = Update::Set(WifiDetails {
+                ssid: ssid.to_string(),
+                password: password.to_string(),
+            });
+            upd.validate().is_ok()
+        };
+        assert!(check("mynetwork", "hunter22"));
+        assert!(check(&"s".repeat(32), &"p".repeat(64)));
+        assert!(!check("", "hunter22"));
+        assert!(!check(&"s".repeat(33), "hunter22"));
+        assert!(!check("mynetwork", &"p".repeat(65)));
     }
 }
